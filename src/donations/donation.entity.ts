@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Donor } from '../donors/donor.entity';
 import { Campaign } from '../campaigns/campaign.entity';
+import { DonationCause } from '../donation-causes/donation-cause.entity';
 
 @Entity('donations')
 export class Donation {
@@ -30,9 +31,13 @@ export class Donation {
     @Column({ length: 30, nullable: true })
     payment_method: string;
 
-    @Column({ length: 255, nullable: true })
-    donation_cause: string;
-
     @CreateDateColumn()
     donation_date: Date;
+
+    @ManyToOne(() => DonationCause, { nullable: true })
+    @JoinColumn({ name: 'donation_cause_id' })
+    cause: DonationCause;
+
+    @Column({ nullable: true })
+    donation_cause_id: string;
 }

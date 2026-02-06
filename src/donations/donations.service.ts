@@ -47,10 +47,11 @@ export class DonationsService {
 
         queryBuilder
             .leftJoinAndSelect('donation.donor', 'donor')
-            .leftJoinAndSelect('donation.campaign', 'campaign');
+            .leftJoinAndSelect('donation.campaign', 'campaign')
+            .leftJoinAndSelect('donation.cause', 'cause');
 
         if (pageOptionsDto.search) {
-            queryBuilder.where('donation.donation_cause ILIKE :search', {
+            queryBuilder.where('cause.name ILIKE :search', {
                 search: `%${pageOptionsDto.search}%`,
             });
         }
@@ -71,7 +72,7 @@ export class DonationsService {
     findOne(id: string): Promise<Donation | null> {
         return this.donationsRepository.findOne({
             where: { id },
-            relations: ['donor', 'campaign'],
+            relations: ['donor', 'campaign', 'cause'],
         });
     }
 

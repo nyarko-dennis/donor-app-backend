@@ -31,7 +31,7 @@ export class DonationResponseDto {
         this.amount = Number(donation.amount);
         this.currency = donation.currency;
         this.payment_method = donation.payment_method;
-        this.donation_cause = donation.donation_cause;
+        this.donation_cause = donation.cause ? donation.cause.name : 'Unknown';
         this.donor_id = donation.donor ? donation.donor.id : '';
         this.campaign_id = donation.campaign ? donation.campaign.id : '';
         this.created_at = donation.donation_date;

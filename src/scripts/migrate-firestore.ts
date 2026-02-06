@@ -215,7 +215,7 @@ async function migrate() {
                     amount: data.amount,
                     currency: data.currency || 'GHS',
                     payment_method: data.paymentMethod,
-                    donation_cause: data.donationCause || 'Unknown',
+                    // donation_cause: data.donationCause, // Column removed
                     donation_date: convertFirestoreDate(data.dateCreated) || new Date(),
                     donor: donor || undefined, // Nullable relationship
                     campaign: campaign || undefined, // Nullable relationship
