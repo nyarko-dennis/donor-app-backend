@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:15
+    container_name: donor_app_db
+    environment:
+      POSTGRES_USER: donor_user
+      POSTGRES_PASSWORD: donor_password
+      POSTGRES_DB: donor_db
+    ports:
+      - '5433:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: donor_app_backend
+    ports:
+      - '3000:3000'
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: donor_user
+      DB_PASSWORD: donor_password
+      DB_NAME: donor_db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

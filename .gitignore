@@ -38,3 +38,6 @@ lerna-debug.log*
 
 # Agent
 .agent/
+
+# Documentation
+docs/
