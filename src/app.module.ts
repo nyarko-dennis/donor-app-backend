@@ -8,6 +8,7 @@ import { DonorsModule } from './donors/donors.module';
 import { DonationsModule } from './donations/donations.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { UsersModule } from './users/users.module';
     DonationsModule,
     AuthModule,
     UsersModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
