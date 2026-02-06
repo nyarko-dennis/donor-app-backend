@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
+import { PageMetaDto } from '../common/dto/page-meta.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -27,8 +30,43 @@ export class UsersService {
         return this.usersRepository.findOneBy({ email });
     }
 
-    async findAll(): Promise<User[]> {
-        return this.usersRepository.find();
+    async findById(id: string): Promise<User | null> {
+        return this.usersRepository.findOneBy({ id });
+    }
+
+    async updatePassword(id: string, hashedPassword: string): Promise<void> {
+        await this.usersRepository.update(id, { password: hashedPassword });
+    }
+
+    async setTwoFactorSecret(secret: string, userId: string): Promise<void> {
+        await this.usersRepository.update(userId, { two_factor_secret: secret });
+    }
+
+    async turnOnTwoFactorAuthentication(userId: string): Promise<void> {
+        await this.usersRepository.update(userId, { is_two_factor_enabled: true });
+    }
+
+    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> {
+        const queryBuilder = this.usersRepository.createQueryBuilder('user');
+
+        if (pageOptionsDto.search) {
+            queryBuilder.where(
+                'user.first_name ILIKE :search OR user.last_name ILIKE :search OR user.email ILIKE :search',
+                { search: `%${pageOptionsDto.search}%` },
+            );
+        }
+
+        queryBuilder
+            .orderBy('user.created_at', pageOptionsDto.order)
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take);
+
+        const itemCount = await queryBuilder.getCount();
+        const { entities } = await queryBuilder.getRawAndEntities();
+
+        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+        return new PageDto(entities, pageMetaDto);
     }
 
     async onModuleInit() {

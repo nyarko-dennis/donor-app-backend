@@ -33,6 +33,12 @@ export class User {
     @Column({ default: true })
     is_active: boolean;
 
+    @Column({ nullable: true })
+    two_factor_secret: string;
+
+    @Column({ default: false })
+    is_two_factor_enabled: boolean;
+
     @CreateDateColumn()
     created_at: Date;
 }

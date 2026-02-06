@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Campaign } from './campaign.entity';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
+import { PageMetaDto } from '../common/dto/page-meta.dto';
 
 @Injectable()
 export class CampaignsService {
@@ -16,8 +19,26 @@ export class CampaignsService {
         return this.campaignsRepository.save(campaign);
     }
 
-    findAll(): Promise<Campaign[]> {
-        return this.campaignsRepository.find();
+    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Campaign>> {
+        const queryBuilder = this.campaignsRepository.createQueryBuilder('campaign');
+
+        if (pageOptionsDto.search) {
+            queryBuilder.where('campaign.name ILIKE :search OR campaign.description ILIKE :search', {
+                search: `%${pageOptionsDto.search}%`,
+            });
+        }
+
+        queryBuilder
+            .orderBy('campaign.created_at', pageOptionsDto.order)
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take);
+
+        const itemCount = await queryBuilder.getCount();
+        const { entities } = await queryBuilder.getRawAndEntities();
+
+        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+        return new PageDto(entities, pageMetaDto);
     }
 
     findOne(id: string): Promise<Campaign | null> {
