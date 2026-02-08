@@ -7,6 +7,12 @@ export class SubConstituencyResponseDto {
     @ApiProperty({ example: 'Kumasi Metropolitan' })
     name: string;
 
+    @ApiProperty({ example: 'Description', required: false })
+    description?: string;
+
+    @ApiProperty({ example: 1, required: false })
+    order?: number;
+
     @ApiProperty({ example: 'parent-constituency-uuid' })
     constituency_id: string;
 

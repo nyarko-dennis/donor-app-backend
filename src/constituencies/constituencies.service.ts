@@ -7,7 +7,9 @@ import { CreateConstituencyDto } from './dto/create-constituency.dto';
 import { UpdateConstituencyDto } from './dto/update-constituency.dto';
 import { CreateSubConstituencyDto } from './dto/create-sub-constituency.dto';
 import { UpdateSubConstituencyDto } from './dto/update-sub-constituency.dto';
-
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageMetaDto } from '../common/dto/page-meta.dto';
+import { PageDto } from '../common/dto/page.dto';
 @Injectable()
 export class ConstituenciesService {
     constructor(
@@ -23,11 +25,21 @@ export class ConstituenciesService {
         return this.constituenciesRepository.save(constituency);
     }
 
-    async findAll(): Promise<Constituency[]> {
-        return this.constituenciesRepository.find({
-            relations: ['sub_constituencies'],
-            order: { name: 'ASC' }
-        });
+    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Constituency>> {
+        const queryBuilder = this.constituenciesRepository.createQueryBuilder('constituency');
+
+        queryBuilder
+            .leftJoinAndSelect('constituency.sub_constituencies', 'sub_constituencies')
+            .orderBy('constituency.name', pageOptionsDto.order)
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take);
+
+        const itemCount = await queryBuilder.getCount();
+        const { entities } = await queryBuilder.getRawAndEntities();
+
+        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+        return new PageDto(entities, pageMetaDto);
     }
 
     async findOne(id: string): Promise<Constituency> {

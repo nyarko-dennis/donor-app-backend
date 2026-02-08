@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { DonationCausesService } from './donation-causes.service';
 import { CreateDonationCauseDto } from './dto/create-donation-cause.dto';
 import { DonationCauseResponseDto } from './dto/donation-cause-response.dto';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Donation Causes')
@@ -16,9 +18,9 @@ export class DonationCausesController {
     }
 
     @Get()
-    @ApiResponse({ status: 200, description: 'List of all donation causes.', type: [DonationCauseResponseDto] })
-    findAll() {
-        return this.donationCausesService.findAll();
+    @ApiResponse({ status: 200, description: 'List of all donation causes.', type: PageDto<DonationCauseResponseDto> })
+    findAll(@Query() pageOptionsDto: PageOptionsDto) {
+        return this.donationCausesService.findAll(pageOptionsDto);
     }
 
     @Get(':id')

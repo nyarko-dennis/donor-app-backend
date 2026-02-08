@@ -3,6 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DonationCause } from './donation-cause.entity';
 import { CreateDonationCauseDto } from './dto/create-donation-cause.dto';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageMetaDto } from '../common/dto/page-meta.dto';
+import { PageDto } from '../common/dto/page.dto';
 
 @Injectable()
 export class DonationCausesService {
@@ -16,10 +19,20 @@ export class DonationCausesService {
         return this.donationCausesRepository.save(cause);
     }
 
-    findAll(): Promise<DonationCause[]> {
-        return this.donationCausesRepository.find({
-            order: { name: 'ASC' }
-        });
+    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<DonationCause>> {
+        const queryBuilder = this.donationCausesRepository.createQueryBuilder('donation_cause');
+
+        queryBuilder
+            .orderBy('donation_cause.created_at', pageOptionsDto.order)
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take);
+
+        const itemCount = await queryBuilder.getCount();
+        const { entities } = await queryBuilder.getRawAndEntities();
+
+        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+        return new PageDto(entities, pageMetaDto);
     }
 
     async findOne(id: string): Promise<DonationCause> {

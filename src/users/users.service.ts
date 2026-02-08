@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
@@ -44,6 +45,28 @@ export class UsersService {
 
     async turnOnTwoFactorAuthentication(userId: string): Promise<void> {
         await this.usersRepository.update(userId, { is_two_factor_enabled: true });
+    }
+
+    async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+        const user = await this.findById(id);
+        if (!user) {
+            throw new NotFoundException(`User with ID ${id} not found`);
+        }
+
+        if (updateUserDto.password) {
+            const salt = await bcrypt.genSalt();
+            updateUserDto.password = await bcrypt.hash(updateUserDto.password, salt);
+        }
+
+        Object.assign(user, updateUserDto);
+        return this.usersRepository.save(user);
+    }
+
+    async remove(id: string): Promise<void> {
+        const result = await this.usersRepository.delete(id);
+        if (result.affected === 0) {
+            throw new NotFoundException(`User with ID ${id} not found`);
+        }
     }
 
     async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> {

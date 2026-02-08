@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ConstituenciesService } from './constituencies.service';
 import { CreateConstituencyDto } from './dto/create-constituency.dto';
 import { UpdateConstituencyDto } from './dto/update-constituency.dto';
@@ -6,6 +6,8 @@ import { CreateSubConstituencyDto } from './dto/create-sub-constituency.dto';
 import { UpdateSubConstituencyDto } from './dto/update-sub-constituency.dto';
 import { ConstituencyResponseDto } from './dto/constituency-response.dto';
 import { SubConstituencyResponseDto } from './dto/sub-constituency-response.dto';
+import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { PageDto } from '../common/dto/page.dto';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Constituencies')
@@ -20,9 +22,9 @@ export class ConstituenciesController {
     }
 
     @Get()
-    @ApiResponse({ status: 200, description: 'List all constituencies.', type: [ConstituencyResponseDto] })
-    findAll() {
-        return this.constituenciesService.findAll();
+    @ApiResponse({ status: 200, description: 'List all constituencies.', type: PageDto<ConstituencyResponseDto> })
+    findAll(@Query() pageOptionsDto: PageOptionsDto) {
+        return this.constituenciesService.findAll(pageOptionsDto);
     }
 
     @Get(':id')
