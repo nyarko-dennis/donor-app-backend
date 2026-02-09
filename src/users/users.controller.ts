@@ -9,6 +9,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 
 @ApiTags('Users')
@@ -31,7 +32,7 @@ export class UsersController {
     @Roles(UserRole.SUPER_ADMIN)
     @ApiOperation({ summary: 'Get all users with pagination and search' })
     @ApiResponse({ status: 200, description: 'Return all users.', type: PageDto<UserResponseDto> })
-    async findAll(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<UserResponseDto>> {
+    async findAll(@Query() pageOptionsDto: UsersPageOptionsDto): Promise<PageDto<UserResponseDto>> {
         const page = await this.usersService.findAll(pageOptionsDto);
         return new PageDto(
             page.data.map((user) => new UserResponseDto(user)),

@@ -8,6 +8,8 @@ import { ConstituencyResponseDto } from './dto/constituency-response.dto';
 import { SubConstituencyResponseDto } from './dto/sub-constituency-response.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
+import { ConstituenciesPageOptionsDto } from './dto/constituencies-page-options.dto';
+import { SubConstituenciesPageOptionsDto } from './dto/sub-constituencies-page-options.dto';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Constituencies')
@@ -23,7 +25,7 @@ export class ConstituenciesController {
 
     @Get()
     @ApiResponse({ status: 200, description: 'List all constituencies.', type: PageDto<ConstituencyResponseDto> })
-    findAll(@Query() pageOptionsDto: PageOptionsDto) {
+    findAll(@Query() pageOptionsDto: ConstituenciesPageOptionsDto) {
         return this.constituenciesService.findAll(pageOptionsDto);
     }
 
@@ -64,5 +66,16 @@ export class ConstituenciesController {
     @ApiResponse({ status: 200, description: 'Delete sub-constituency.' })
     removeSubConstituency(@Param('id') id: string) {
         return this.constituenciesService.removeSubConstituency(id);
+    }
+    @Get('sub-constituencies/all')
+    @ApiResponse({ status: 200, description: 'List all sub-constituencies.', type: PageDto<SubConstituencyResponseDto> })
+    findAllSubConstituencies(@Query() pageOptionsDto: SubConstituenciesPageOptionsDto) {
+        return this.constituenciesService.findAllSubConstituencies(pageOptionsDto);
+    }
+
+    @Get('sub-constituencies/:id')
+    @ApiResponse({ status: 200, description: 'Get one sub-constituency.', type: SubConstituencyResponseDto })
+    findSubConstituency(@Param('id') id: string) {
+        return this.constituenciesService.findSubConstituency(id);
     }
 }

@@ -8,7 +8,8 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { TwoFactorAuthenticationCodeDto } from './dto/two-factor-authentication-code.dto';
 import { UsersService } from '../users/users.service';
-import { UnauthorizedException } from '@nestjs/common';
+import { UserResponseDto } from '../users/dto/user-response.dto';
+import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -44,6 +45,18 @@ export class AuthController {
         }
 
         return this.authService.login(user); // Fixed: ensure calling correct service method
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Get('profile')
+    @ApiOperation({ summary: 'Get current user profile' })
+    @ApiResponse({ status: 200, description: 'Return current user profile.', type: UserResponseDto })
+    async getProfile(@Request() req) {
+        const user = await this.usersService.findById(req.user.userId);
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+        return new UserResponseDto(user);
     }
 
     @Post('forgot-password')

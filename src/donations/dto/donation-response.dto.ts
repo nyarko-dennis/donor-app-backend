@@ -1,6 +1,31 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Donation } from '../donation.entity';
 
+class MinimalDonorDto {
+    @ApiProperty()
+    id: string;
+
+    @ApiProperty()
+    first_name: string;
+
+    @ApiProperty()
+    last_name: string;
+
+    @ApiProperty()
+    email: string;
+}
+
+class MinimalCampaignDto {
+    @ApiProperty()
+    id: string;
+
+    @ApiProperty()
+    name: string;
+
+    @ApiProperty()
+    status: string;
+}
+
 export class DonationResponseDto {
     @ApiProperty()
     id: string;
@@ -17,11 +42,11 @@ export class DonationResponseDto {
     @ApiProperty()
     donation_cause: string;
 
-    @ApiProperty()
-    donor_id: string;
+    @ApiProperty({ type: MinimalDonorDto, nullable: true })
+    donor: MinimalDonorDto | null;
 
-    @ApiProperty()
-    campaign_id: string;
+    @ApiProperty({ type: MinimalCampaignDto, nullable: true })
+    campaign: MinimalCampaignDto | null;
 
     @ApiProperty()
     created_at: Date;
@@ -32,8 +57,18 @@ export class DonationResponseDto {
         this.currency = donation.currency;
         this.payment_method = donation.payment_method;
         this.donation_cause = donation.cause ? donation.cause.name : 'Unknown';
-        this.donor_id = donation.donor ? donation.donor.id : '';
-        this.campaign_id = donation.campaign ? donation.campaign.id : '';
+        this.donor = donation.donor ? {
+            id: donation.donor.id,
+            first_name: donation.donor.first_name,
+            last_name: donation.donor.last_name,
+            email: donation.donor.email,
+        } : null;
+        this.campaign = donation.campaign ? {
+            id: donation.campaign.id,
+            name: donation.campaign.name,
+            status: donation.campaign.status,
+        } : null;
         this.created_at = donation.donation_date;
     }
 }
+

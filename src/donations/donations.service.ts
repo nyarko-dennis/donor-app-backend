@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Donation } from './donation.entity';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { DonationsPageOptionsDto } from './dto/donations-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 import { Donor } from '../donors/donor.entity';
@@ -42,7 +43,7 @@ export class DonationsService {
         return this.donationsRepository.save(donation);
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Donation>> {
+    async findAll(pageOptionsDto: DonationsPageOptionsDto): Promise<PageDto<Donation>> {
         const queryBuilder = this.donationsRepository.createQueryBuilder('donation');
 
         queryBuilder
@@ -51,9 +52,41 @@ export class DonationsService {
             .leftJoinAndSelect('donation.cause', 'cause');
 
         if (pageOptionsDto.search) {
-            queryBuilder.where('cause.name ILIKE :search', {
+            queryBuilder.where('(cause.name ILIKE :search OR donor.first_name ILIKE :search OR donor.last_name ILIKE :search)', {
                 search: `%${pageOptionsDto.search}%`,
             });
+        }
+
+        if (pageOptionsDto.donorId) {
+            queryBuilder.andWhere('donation.donor_id = :donorId', { donorId: pageOptionsDto.donorId });
+        }
+
+        if (pageOptionsDto.campaignId) {
+            queryBuilder.andWhere('donation.campaign_id = :campaignId', { campaignId: pageOptionsDto.campaignId });
+        }
+
+        if (pageOptionsDto.causeId) {
+            queryBuilder.andWhere('donation.donation_cause_id = :causeId', { causeId: pageOptionsDto.causeId });
+        }
+
+        if (pageOptionsDto.minAmount) {
+            queryBuilder.andWhere('donation.amount >= :minAmount', { minAmount: pageOptionsDto.minAmount });
+        }
+
+        if (pageOptionsDto.maxAmount) {
+            queryBuilder.andWhere('donation.amount <= :maxAmount', { maxAmount: pageOptionsDto.maxAmount });
+        }
+
+        if (pageOptionsDto.startDate) {
+            queryBuilder.andWhere('donation.donation_date >= :startDate', { startDate: pageOptionsDto.startDate });
+        }
+
+        if (pageOptionsDto.endDate) {
+            queryBuilder.andWhere('donation.donation_date <= :endDate', { endDate: pageOptionsDto.endDate });
+        }
+
+        if (pageOptionsDto.paymentMethod) {
+            queryBuilder.andWhere('donation.payment_method = :paymentMethod', { paymentMethod: pageOptionsDto.paymentMethod });
         }
 
         queryBuilder

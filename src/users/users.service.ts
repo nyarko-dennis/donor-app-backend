@@ -5,6 +5,7 @@ import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { UsersPageOptionsDto } from './dto/users-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 import * as bcrypt from 'bcrypt';
@@ -69,14 +70,22 @@ export class UsersService {
         }
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<User>> {
+    async findAll(pageOptionsDto: UsersPageOptionsDto): Promise<PageDto<User>> {
         const queryBuilder = this.usersRepository.createQueryBuilder('user');
 
         if (pageOptionsDto.search) {
             queryBuilder.where(
-                'user.first_name ILIKE :search OR user.last_name ILIKE :search OR user.email ILIKE :search',
+                '(user.first_name ILIKE :search OR user.last_name ILIKE :search OR user.email ILIKE :search)',
                 { search: `%${pageOptionsDto.search}%` },
             );
+        }
+
+        if (pageOptionsDto.role) {
+            queryBuilder.andWhere('user.role = :role', { role: pageOptionsDto.role });
+        }
+
+        if (pageOptionsDto.isActive !== undefined) {
+            queryBuilder.andWhere('user.is_active = :isActive', { isActive: pageOptionsDto.isActive });
         }
 
         queryBuilder

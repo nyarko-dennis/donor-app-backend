@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Campaign } from './campaign.entity';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { CampaignsPageOptionsDto } from './dto/campaigns-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 
@@ -19,13 +20,25 @@ export class CampaignsService {
         return this.campaignsRepository.save(campaign);
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Campaign>> {
+    async findAll(pageOptionsDto: CampaignsPageOptionsDto): Promise<PageDto<Campaign>> {
         const queryBuilder = this.campaignsRepository.createQueryBuilder('campaign');
 
         if (pageOptionsDto.search) {
-            queryBuilder.where('campaign.name ILIKE :search OR campaign.description ILIKE :search', {
+            queryBuilder.where('(campaign.name ILIKE :search OR campaign.description ILIKE :search)', {
                 search: `%${pageOptionsDto.search}%`,
             });
+        }
+
+        if (pageOptionsDto.status) {
+            queryBuilder.andWhere('campaign.status = :status', { status: pageOptionsDto.status });
+        }
+
+        if (pageOptionsDto.minGoal) {
+            queryBuilder.andWhere('campaign.goal_amount >= :minGoal', { minGoal: pageOptionsDto.minGoal });
+        }
+
+        if (pageOptionsDto.maxGoal) {
+            queryBuilder.andWhere('campaign.goal_amount <= :maxGoal', { maxGoal: pageOptionsDto.maxGoal });
         }
 
         queryBuilder

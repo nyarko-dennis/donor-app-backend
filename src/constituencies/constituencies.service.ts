@@ -10,6 +10,8 @@ import { UpdateSubConstituencyDto } from './dto/update-sub-constituency.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 import { PageDto } from '../common/dto/page.dto';
+import { ConstituenciesPageOptionsDto } from './dto/constituencies-page-options.dto';
+import { SubConstituenciesPageOptionsDto } from './dto/sub-constituencies-page-options.dto';
 @Injectable()
 export class ConstituenciesService {
     constructor(
@@ -25,8 +27,12 @@ export class ConstituenciesService {
         return this.constituenciesRepository.save(constituency);
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Constituency>> {
+    async findAll(pageOptionsDto: ConstituenciesPageOptionsDto): Promise<PageDto<Constituency>> {
         const queryBuilder = this.constituenciesRepository.createQueryBuilder('constituency');
+
+        if (pageOptionsDto.search) {
+            queryBuilder.where('constituency.name ILIKE :search', { search: `%${pageOptionsDto.search}%` });
+        }
 
         queryBuilder
             .leftJoinAndSelect('constituency.sub_constituencies', 'sub_constituencies')
@@ -74,6 +80,33 @@ export class ConstituenciesService {
             constituency
         });
         return this.subConstituenciesRepository.save(subConstituency);
+    }
+
+    async findAllSubConstituencies(pageOptionsDto: SubConstituenciesPageOptionsDto): Promise<PageDto<SubConstituency>> {
+        const queryBuilder = this.subConstituenciesRepository.createQueryBuilder('sub_constituency');
+
+        if (pageOptionsDto.search) {
+            queryBuilder.where('sub_constituency.name ILIKE :search OR sub_constituency.description ILIKE :search', {
+                search: `%${pageOptionsDto.search}%`,
+            });
+        }
+
+        if (pageOptionsDto.constituencyId) {
+            queryBuilder.andWhere('sub_constituency.constituency_id = :constituencyId', { constituencyId: pageOptionsDto.constituencyId });
+        }
+
+        queryBuilder
+            .leftJoinAndSelect('sub_constituency.constituency', 'constituency')
+            .orderBy('sub_constituency.name', pageOptionsDto.order)
+            .skip(pageOptionsDto.skip)
+            .take(pageOptionsDto.take);
+
+        const itemCount = await queryBuilder.getCount();
+        const { entities } = await queryBuilder.getRawAndEntities();
+
+        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+        return new PageDto(entities, pageMetaDto);
     }
 
     async findSubConstituency(id: string): Promise<SubConstituency> {

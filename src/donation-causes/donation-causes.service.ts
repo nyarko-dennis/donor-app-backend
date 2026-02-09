@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { DonationCause } from './donation-cause.entity';
 import { CreateDonationCauseDto } from './dto/create-donation-cause.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { DonationCausesPageOptionsDto } from './dto/donation-causes-page-options.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 import { PageDto } from '../common/dto/page.dto';
 
@@ -19,8 +20,18 @@ export class DonationCausesService {
         return this.donationCausesRepository.save(cause);
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<DonationCause>> {
+    async findAll(pageOptionsDto: DonationCausesPageOptionsDto): Promise<PageDto<DonationCause>> {
         const queryBuilder = this.donationCausesRepository.createQueryBuilder('donation_cause');
+
+        if (pageOptionsDto.search) {
+            queryBuilder.where('donation_cause.name ILIKE :search OR donation_cause.description ILIKE :search', {
+                search: `%${pageOptionsDto.search}%`,
+            });
+        }
+
+        if (pageOptionsDto.isActive !== undefined) {
+            queryBuilder.andWhere('donation_cause.is_active = :isActive', { isActive: pageOptionsDto.isActive });
+        }
 
         queryBuilder
             .orderBy('donation_cause.created_at', pageOptionsDto.order)

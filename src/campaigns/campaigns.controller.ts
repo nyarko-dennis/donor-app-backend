@@ -9,6 +9,7 @@ import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '../users/user.entity';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { CampaignsPageOptionsDto } from './dto/campaigns-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 
 @ApiTags('Campaigns')
@@ -31,7 +32,7 @@ export class CampaignsController {
     @Roles(UserRole.STAKEHOLDER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
     @ApiOperation({ summary: 'Get all campaigns with pagination and search' })
     @ApiResponse({ status: 200, description: 'Return all campaigns.', type: PageDto<CampaignResponseDto> })
-    async findAll(@Query() pageOptionsDto: PageOptionsDto): Promise<PageDto<CampaignResponseDto>> {
+    async findAll(@Query() pageOptionsDto: CampaignsPageOptionsDto): Promise<PageDto<CampaignResponseDto>> {
         const page = await this.campaignsService.findAll(pageOptionsDto);
         return new PageDto(
             page.data.map(campaign => new CampaignResponseDto(campaign)),

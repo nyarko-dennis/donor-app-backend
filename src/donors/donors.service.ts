@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Donor } from './donor.entity';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
+import { DonorsPageOptionsDto } from './dto/donors-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
 
@@ -19,14 +20,22 @@ export class DonorsService {
         return this.donorsRepository.save(donor);
     }
 
-    async findAll(pageOptionsDto: PageOptionsDto): Promise<PageDto<Donor>> {
+    async findAll(pageOptionsDto: DonorsPageOptionsDto): Promise<PageDto<Donor>> {
         const queryBuilder = this.donorsRepository.createQueryBuilder('donor');
 
         if (pageOptionsDto.search) {
             queryBuilder.where(
-                'donor.first_name ILIKE :search OR donor.last_name ILIKE :search OR donor.email ILIKE :search',
+                '(donor.first_name ILIKE :search OR donor.last_name ILIKE :search OR donor.email ILIKE :search)',
                 { search: `%${pageOptionsDto.search}%` },
             );
+        }
+
+        if (pageOptionsDto.constituencyId) {
+            queryBuilder.andWhere('donor.constituency_id = :constituencyId', { constituencyId: pageOptionsDto.constituencyId });
+        }
+
+        if (pageOptionsDto.subConstituencyId) {
+            queryBuilder.andWhere('donor.sub_constituency_id = :subConstituencyId', { subConstituencyId: pageOptionsDto.subConstituencyId });
         }
 
         queryBuilder
