@@ -6,13 +6,14 @@ import { PaymentDto } from './payment.interface';
 export class PaymentController {
     constructor(private readonly paymentService: PaymentService) { }
 
-    @Post('initiate')
-    async initiatePayment(@Body() paymentDto: PaymentDto) {
-        return this.paymentService.initiatePayment(paymentDto);
+    @Post('initialize')
+    async initialize(@Body() paymentDto: PaymentDto) {
+        // Defaulting to Paystack for now, or get from DTO if available
+        return this.paymentService.initialize('paystack', paymentDto);
     }
 
     @Get('verify/:reference')
-    async verifyPayment(@Param('reference') reference: string) {
-        return this.paymentService.verifyPayment(reference);
+    async verify(@Param('reference') reference: string) {
+        return this.paymentService.verify('paystack', reference);
     }
 }

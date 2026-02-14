@@ -34,7 +34,7 @@ export class DonationCausesService {
         }
 
         queryBuilder
-            .orderBy('donation_cause.created_at', pageOptionsDto.order)
+            .orderBy(`donation_cause.${pageOptionsDto.sortBy || 'created_at'}`, pageOptionsDto.order)
             .skip(pageOptionsDto.skip)
             .take(pageOptionsDto.take);
 

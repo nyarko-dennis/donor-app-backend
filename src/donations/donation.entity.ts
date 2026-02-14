@@ -40,4 +40,16 @@ export class Donation {
 
     @Column({ nullable: true })
     donation_cause_id: string;
+
+    @Column({ default: 'PENDING' })
+    status: 'PENDING' | 'SUCCESS' | 'FAILED';
+
+    @Column({ nullable: true })
+    reference: string;
+
+    @Column({ nullable: true })
+    idempotency_key: string;
+
+    @Column({ nullable: true })
+    provider: string; // 'paystack', 'flutterwave', etc.
 }

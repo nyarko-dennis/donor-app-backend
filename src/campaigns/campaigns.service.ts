@@ -42,7 +42,7 @@ export class CampaignsService {
         }
 
         queryBuilder
-            .orderBy('campaign.created_at', pageOptionsDto.order)
+            .orderBy(`campaign.${pageOptionsDto.sortBy || 'created_at'}`, pageOptionsDto.order)
             .skip(pageOptionsDto.skip)
             .take(pageOptionsDto.take);
 

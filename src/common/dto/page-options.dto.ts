@@ -13,6 +13,11 @@ export class PageOptionsDto {
     @IsOptional()
     readonly order: Order = Order.ASC;
 
+    @ApiPropertyOptional({ description: 'Column name to sort by', default: 'created_at' })
+    @IsString()
+    @IsOptional()
+    readonly sortBy?: string = 'created_at';
+
     @ApiPropertyOptional({
         minimum: 1,
         default: 1,
@@ -25,13 +30,11 @@ export class PageOptionsDto {
 
     @ApiPropertyOptional({
         minimum: 1,
-        maximum: 50,
         default: 10,
     })
     @Type(() => Number)
     @IsInt()
     @Min(1)
-    @Max(50)
     @IsOptional()
     readonly take: number = 10;
 

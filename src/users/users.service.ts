@@ -89,7 +89,7 @@ export class UsersService {
         }
 
         queryBuilder
-            .orderBy('user.created_at', pageOptionsDto.order)
+            .orderBy(`user.${pageOptionsDto.sortBy || 'created_at'}`, pageOptionsDto.order)
             .skip(pageOptionsDto.skip)
             .take(pageOptionsDto.take);
 

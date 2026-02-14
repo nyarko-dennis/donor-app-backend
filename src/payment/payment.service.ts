@@ -1,25 +1,18 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
-import { PaymentStrategy, PaymentDto, PaymentResponse } from './payment.interface';
-import { PaystackStrategy } from './strategies/paystack.strategy';
+import { Injectable } from '@nestjs/common';
+import { PaymentDto, InitializationResult, VerificationResult } from './payment.interface';
+import { PaymentFactory } from './payment.factory';
 
 @Injectable()
 export class PaymentService {
-    private strategy: PaymentStrategy;
+    constructor(private paymentFactory: PaymentFactory) { }
 
-    constructor(private paystackStrategy: PaystackStrategy) {
-        // Default strategy. We can make this dynamic if needed.
-        this.strategy = this.paystackStrategy;
+    async initialize(provider: string, data: PaymentDto): Promise<InitializationResult> {
+        const strategy = this.paymentFactory.getProvider(provider);
+        return strategy.initialize(data);
     }
 
-    setStrategy(strategy: PaymentStrategy) {
-        this.strategy = strategy;
-    }
-
-    async initiatePayment(data: PaymentDto): Promise<PaymentResponse> {
-        return this.strategy.initiatePayment(data);
-    }
-
-    async verifyPayment(reference: string): Promise<PaymentResponse> {
-        return this.strategy.verifyPayment(reference);
+    async verify(provider: string, reference: string): Promise<VerificationResult> {
+        const strategy = this.paymentFactory.getProvider(provider);
+        return strategy.verify(reference);
     }
 }

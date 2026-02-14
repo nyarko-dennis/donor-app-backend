@@ -44,7 +44,12 @@ export class AuthController {
             return this.authService.loginWith2fa(user);
         }
 
-        return this.authService.login(user); // Fixed: ensure calling correct service method
+        // Enforce mandatory 2FA setup
+        const loginResponse = await this.authService.login(user);
+        return {
+            ...loginResponse,
+            isTwoFactorAuthenticationSetupRequired: true,
+        };
     }
 
     @UseGuards(JwtAuthGuard)
@@ -52,7 +57,7 @@ export class AuthController {
     @ApiOperation({ summary: 'Get current user profile' })
     @ApiResponse({ status: 200, description: 'Return current user profile.', type: UserResponseDto })
     async getProfile(@Request() req) {
-        const user = await this.usersService.findById(req.user.userId);
+        const user = await this.usersService.findById(req.user.id);
         if (!user) {
             throw new NotFoundException('User not found');
         }
@@ -81,7 +86,7 @@ export class AuthController {
     @ApiResponse({ status: 200, description: 'Password changed successfully.' })
     @ApiBody({ type: ChangePasswordDto })
     async changePassword(@Request() req, @Body() changePasswordDto: ChangePasswordDto) {
-        return this.authService.changePassword(req.user.userId, changePasswordDto.oldPassword, changePasswordDto.newPassword);
+        return this.authService.changePassword(req.user.id, changePasswordDto.oldPassword, changePasswordDto.newPassword);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -99,9 +104,14 @@ export class AuthController {
     @ApiResponse({ status: 200, description: '2FA enabled' })
     @ApiBody({ type: TwoFactorAuthenticationCodeDto }) // We need to import this
     async turnOnTwoFactorAuthentication(@Request() req, @Body() body: TwoFactorAuthenticationCodeDto) {
+        const user = await this.usersService.findById(req.user.id);
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
         const isCodeValid = await this.authService.isTwoFactorAuthenticationCodeValid(
             body.code,
-            req.user,
+            user,
         );
         if (!isCodeValid) {
             throw new UnauthorizedException('Wrong authentication code');

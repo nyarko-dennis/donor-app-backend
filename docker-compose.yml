@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: donor_password
       POSTGRES_DB: donor_db
     ports:
-      - '5433:5432'
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
@@ -16,7 +16,9 @@ services:
     build: .
     container_name: donor_app_backend
     ports:
-      - '3000:3000'
+      - "3000:3000"
+    env_file:
+      - .env
     environment:
       DB_HOST: db
       DB_PORT: 5432

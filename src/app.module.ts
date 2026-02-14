@@ -11,6 +11,8 @@ import { UsersModule } from './users/users.module';
 import { PaymentModule } from './payment/payment.module';
 import { DonationCausesModule } from './donation-causes/donation-causes.module';
 import { ConstituenciesModule } from './constituencies/constituencies.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { QueueModule } from './queue/queue.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { ConstituenciesModule } from './constituencies/constituencies.module';
     PaymentModule,
     DonationCausesModule,
     ConstituenciesModule,
+    DashboardModule,
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -36,7 +36,7 @@ export class ConstituenciesService {
 
         queryBuilder
             .leftJoinAndSelect('constituency.sub_constituencies', 'sub_constituencies')
-            .orderBy('constituency.name', pageOptionsDto.order)
+            .orderBy(`constituency.${pageOptionsDto.sortBy || 'name'}`, pageOptionsDto.order)
             .skip(pageOptionsDto.skip)
             .take(pageOptionsDto.take);
 
@@ -97,7 +97,7 @@ export class ConstituenciesService {
 
         queryBuilder
             .leftJoinAndSelect('sub_constituency.constituency', 'constituency')
-            .orderBy('sub_constituency.name', pageOptionsDto.order)
+            .orderBy(`sub_constituency.${pageOptionsDto.sortBy || 'name'}`, pageOptionsDto.order)
             .skip(pageOptionsDto.skip)
             .take(pageOptionsDto.take);
 

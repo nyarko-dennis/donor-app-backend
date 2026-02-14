@@ -5,13 +5,20 @@ export interface PaymentDto {
     metadata?: any;
 }
 
-export interface PaymentResponse {
+export interface InitializationResult {
     status: boolean;
     message: string;
     data?: any;
 }
 
-export interface PaymentStrategy {
-    initiatePayment(data: PaymentDto): Promise<PaymentResponse>;
-    verifyPayment(reference: string): Promise<PaymentResponse>;
+export interface VerificationResult {
+    status: boolean;
+    message: string;
+    data?: any;
+}
+
+export interface PaymentProvider {
+    initialize(data: PaymentDto): Promise<InitializationResult>;
+    verify(reference: string): Promise<VerificationResult>;
+    handleWebhook(payload: any, signature: string): Promise<boolean>;
 }

@@ -39,7 +39,7 @@ export class DonorsService {
         }
 
         queryBuilder
-            .orderBy('donor.date_joined', pageOptionsDto.order)
+            .orderBy(`donor.${pageOptionsDto.sortBy || 'date_joined'}`, pageOptionsDto.order)
             .skip(pageOptionsDto.skip)
             .take(pageOptionsDto.take);
 
