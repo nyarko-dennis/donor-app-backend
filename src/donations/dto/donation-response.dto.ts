@@ -42,6 +42,12 @@ export class DonationResponseDto {
     @ApiProperty()
     donation_cause: string;
 
+    @ApiProperty()
+    payment_status: string;
+
+    @ApiProperty({ nullable: true })
+    reference: string | null;
+
     @ApiProperty({ type: MinimalDonorDto, nullable: true })
     donor: MinimalDonorDto | null;
 
@@ -57,6 +63,8 @@ export class DonationResponseDto {
         this.currency = donation.currency;
         this.payment_method = donation.payment_method;
         this.donation_cause = donation.cause ? donation.cause.name : 'Unknown';
+        this.payment_status = donation.transaction?.status || 'N/A';
+        this.reference = donation.transaction?.reference || null;
         this.donor = donation.donor ? {
             id: donation.donor.id,
             first_name: donation.donor.first_name,

@@ -29,10 +29,12 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     }
 
     async send(queue: string, data: any) {
+        await this.boss.createQueue(queue);
         return this.boss.send(queue, data);
     }
 
     async subscribe(queue: string, callback: (job: any) => Promise<void>) {
+        await this.boss.createQueue(queue);
         await this.boss.work(queue, async (job) => {
             await callback(job);
         });

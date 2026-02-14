@@ -6,6 +6,7 @@ import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { DonationCausesPageOptionsDto } from './dto/donation-causes-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
 import { ApiTags, ApiResponse } from '@nestjs/swagger';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('Donation Causes')
 @Controller('donation-causes')
@@ -19,6 +20,7 @@ export class DonationCausesController {
     }
 
     @Get()
+    @Public()
     @ApiResponse({ status: 200, description: 'List of all donation causes.', type: PageDto<DonationCauseResponseDto> })
     findAll(@Query() pageOptionsDto: DonationCausesPageOptionsDto) {
         return this.donationCausesService.findAll(pageOptionsDto);

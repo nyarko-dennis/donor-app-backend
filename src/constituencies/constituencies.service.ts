@@ -110,11 +110,21 @@ export class ConstituenciesService {
     }
 
     async findSubConstituency(id: string): Promise<SubConstituency> {
-        const subConstituency = await this.subConstituenciesRepository.findOneBy({ id });
+        const subConstituency = await this.subConstituenciesRepository.findOne({
+            where: { id },
+            relations: ['constituency'],
+        });
         if (!subConstituency) {
             throw new NotFoundException(`SubConstituency with ID ${id} not found`);
         }
         return subConstituency;
+    }
+
+    async findAllSubConstituenciesByConstituencyId(constituencyId: string): Promise<SubConstituency[]> {
+        return this.subConstituenciesRepository.find({
+            where: { constituency: { id: constituencyId } },
+            order: { name: 'ASC' },
+        });
     }
 
     async updateSubConstituency(id: string, updateSubConstituencyDto: UpdateSubConstituencyDto): Promise<SubConstituency> {

@@ -1,8 +1,10 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, OnModuleInit, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Donation } from './donation.entity';
+import { Transaction } from './transaction.entity';
 import { CreateDonationDto } from './dto/create-donation.dto';
+import { InitiateDonationDto } from './dto/initiate-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
 import { DonationsPageOptionsDto } from './dto/donations-page-options.dto';
 import { PageMetaDto } from '../common/dto/page-meta.dto';
@@ -11,22 +13,33 @@ import { Donor } from '../donors/donor.entity';
 import { Campaign } from '../campaigns/campaign.entity';
 import { PaymentService } from '../payment/payment.service';
 import { QueueService } from '../queue/queue.service';
+import { DonationJob } from './jobs/donation.job';
 import * as crypto from 'crypto';
 
 @Injectable()
-export class DonationsService {
+export class DonationsService implements OnModuleInit {
     private readonly logger = new Logger(DonationsService.name);
 
     constructor(
         @InjectRepository(Donation)
         private donationsRepository: Repository<Donation>,
+        @InjectRepository(Transaction)
+        private transactionsRepository: Repository<Transaction>,
         @InjectRepository(Donor)
         private donorsRepository: Repository<Donor>,
         @InjectRepository(Campaign)
         private campaignsRepository: Repository<Campaign>,
         private paymentService: PaymentService,
         private queueService: QueueService,
+        private donationJob: DonationJob,
     ) { }
+
+    async onModuleInit() {
+        await this.queueService.subscribe('donation-processing', async (job) => {
+            await this.donationJob.handle(job);
+        });
+        this.logger.log('Subscribed to donation-processing queue');
+    }
 
     async create(createDonationDto: CreateDonationDto): Promise<Donation> {
         const { donorId, campaignId, ...donationData } = createDonationDto;
@@ -45,7 +58,6 @@ export class DonationsService {
             ...donationData,
             donor,
             campaign,
-            status: 'PENDING',
         });
 
         return this.donationsRepository.save(donation);
@@ -57,7 +69,8 @@ export class DonationsService {
         queryBuilder
             .leftJoinAndSelect('donation.donor', 'donor')
             .leftJoinAndSelect('donation.campaign', 'campaign')
-            .leftJoinAndSelect('donation.cause', 'cause');
+            .leftJoinAndSelect('donation.cause', 'cause')
+            .leftJoinAndSelect('donation.transaction', 'transaction');
 
         if (pageOptionsDto.search) {
             queryBuilder.where('(cause.name ILIKE :search OR donor.first_name ILIKE :search OR donor.last_name ILIKE :search)', {
@@ -113,7 +126,7 @@ export class DonationsService {
     async findOne(id: string): Promise<Donation | null> {
         return this.donationsRepository.findOne({
             where: { id },
-            relations: ['donor', 'campaign', 'cause'],
+            relations: ['donor', 'campaign', 'cause', 'transaction'],
         });
     }
 
@@ -126,113 +139,96 @@ export class DonationsService {
         await this.donationsRepository.delete(id);
     }
 
-    async initiateDonation(createDonationDto: CreateDonationDto, user: any) {
-        const { donorId, campaignId, ...donationData } = createDonationDto;
-
-        // Verify donor exists (using the ID from DTO or user context)
-        // If user is donor, we might enforce donorId = user.id if linked.
-        const donor = await this.donorsRepository.findOneBy({ id: donorId });
+    async initiateDonation(dto: InitiateDonationDto) {
+        // 1. Find or create donor by email
+        let donor = await this.donorsRepository.findOneBy({ email: dto.donor.email });
         if (!donor) {
-            throw new NotFoundException(`Donor with ID ${donorId} not found`);
+            donor = this.donorsRepository.create({
+                first_name: dto.donor.first_name,
+                last_name: dto.donor.last_name,
+                email: dto.donor.email,
+                phone: dto.donor.phone,
+                constituency_id: dto.donor.constituency_id,
+                sub_constituency_id: dto.donor.sub_constituency_id,
+            });
+            donor = await this.donorsRepository.save(donor);
+            this.logger.log(`Created new donor: ${donor.id} (${donor.email})`);
         }
 
-        const campaign = await this.campaignsRepository.findOneBy({ id: campaignId });
+        // 2. Verify campaign exists
+        const campaign = await this.campaignsRepository.findOneBy({ id: dto.campaignId });
         if (!campaign) {
-            throw new NotFoundException(`Campaign with ID ${campaignId} not found`);
+            throw new NotFoundException(`Campaign with ID ${dto.campaignId} not found`);
         }
 
-        // 1. Create a PENDING donation record
+        // 3. Generate a unique reference for this transaction
+        const reference = `DON_${crypto.randomUUID().replace(/-/g, '').substring(0, 16)}`;
+
+        // 4. Create donation record
         const donation = this.donationsRepository.create({
-            ...donationData,
+            amount: dto.amount,
+            currency: 'GHS',
+            payment_method: dto.payment_method,
             donor,
             campaign,
-            status: 'PENDING',
-            idempotency_key: crypto.randomUUID(),
+            donation_cause_id: dto.donation_cause || undefined,
             donation_date: new Date(),
         });
 
         const savedDonation = await this.donationsRepository.save(donation);
 
-        // 2. Initialize payment with provider
-        const provider = 'paystack'; // Fixed for now, can be dynamic
+        // 5. Create PENDING Transaction record with OUR reference
+        const transaction = this.transactionsRepository.create({
+            donation: savedDonation,
+            reference,
+            provider: 'paystack',
+            status: 'PENDING',
+            idempotency_key: crypto.randomUUID(),
+        });
 
-        const paymentData = {
+        await this.transactionsRepository.save(transaction);
+
+        this.logger.log(`Donation ${savedDonation.id} created with reference: ${reference}`);
+
+        // 6. Return details for frontend to use with react-paystack
+        return {
+            donation_id: savedDonation.id,
+            reference,
             amount: savedDonation.amount,
-            email: donor.email || user.email, // Fallback to user email if donor doesn't have one
-            currency: savedDonation.currency,
-            metadata: {
-                donation_id: savedDonation.id,
-                custom_fields: [
-                    {
-                        display_name: "Donation ID",
-                        variable_name: "donation_id",
-                        value: savedDonation.id
-                    }
-                ]
-            }
+            email: dto.email,
         };
-
-        try {
-            const initialization = await this.paymentService.initialize(provider, paymentData);
-
-            if (!initialization.status) {
-                savedDonation.status = 'FAILED';
-                await this.donationsRepository.save(savedDonation);
-                throw new BadRequestException('Payment initialization failed: ' + initialization.message);
-            }
-
-            // Update reference
-            savedDonation.reference = initialization.data.reference;
-            savedDonation.provider = provider;
-            await this.donationsRepository.save(savedDonation);
-
-            return {
-                donation: savedDonation,
-                checkout_url: initialization.data.authorization_url,
-                access_code: initialization.data.access_code,
-                reference: initialization.data.reference
-            };
-
-        } catch (error) {
-            this.logger.error(`Payment initialization error: ${error.message}`);
-            // If it was our error (not axios), still fail
-            if (savedDonation.status === 'PENDING') {
-                savedDonation.status = 'FAILED';
-                await this.donationsRepository.save(savedDonation);
-            }
-            throw error;
-        }
     }
 
     async handleSuccessWebhook(reference: string, provider: string) {
         this.logger.log(`Handling success webhook for reference: ${reference}`);
 
-        const donation = await this.donationsRepository.findOne({
+        const transaction = await this.transactionsRepository.findOne({
             where: { reference },
-            relations: ['donor']
+            relations: ['donation', 'donation.donor'],
         });
 
-        if (!donation) {
-            this.logger.warn(`Donation not found for reference: ${reference}`);
+        if (!transaction) {
+            this.logger.warn(`Transaction not found for reference: ${reference}`);
             return;
         }
 
-        if (donation.status === 'SUCCESS') {
-            this.logger.log(`Donation ${donation.id} already processed`);
+        if (transaction.status === 'SUCCESS') {
+            this.logger.log(`Transaction ${transaction.id} already processed`);
             return;
         }
 
-        donation.status = 'SUCCESS';
-        await this.donationsRepository.save(donation);
+        // Update transaction status
+        transaction.status = 'SUCCESS';
+        await this.transactionsRepository.save(transaction);
 
         // Push to queue for post-processing
         await this.queueService.send('donation-processing', {
-            donationId: donation.id,
-            amount: donation.amount,
-            donorId: donation.donor?.id,
-            email: donation.donor?.email
+            donationId: transaction.donation?.id,
+            amount: transaction.donation?.amount,
+            donorId: transaction.donation?.donor?.id,
+            email: transaction.donation?.donor?.email,
         });
 
-        this.logger.log(`Donation ${donation.id} processed and job queued`);
+        this.logger.log(`Transaction ${transaction.id} processed and job queued`);
     }
 }

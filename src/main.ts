@@ -9,7 +9,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['http://localhost:3001'],
+    origin: ['http://localhost:3001', 'http://localhost:3005', 'https://bunny-suitable-conversely.ngrok-free.app'],
     credentials: true,
   });
   app.setGlobalPrefix('api');

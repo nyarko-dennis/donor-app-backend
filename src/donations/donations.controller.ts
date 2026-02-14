@@ -1,11 +1,13 @@
 import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
 import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
+import { InitiateDonationDto } from './dto/initiate-donation.dto';
 import { DonationResponseDto } from './dto/donation-response.dto';
 import { Donation } from './donation.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { Public } from '../auth/public.decorator';
 import { UserRole } from '../users/user.entity';
 import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
@@ -19,9 +21,17 @@ import { PageDto } from '../common/dto/page.dto';
 export class DonationsController {
     constructor(private readonly donationsService: DonationsService) { }
 
+    @Post('initiate')
+    @Public()
+    @ApiOperation({ summary: 'Initiate a public donation with Paystack payment' })
+    @ApiResponse({ status: 201, description: 'Donation created and payment initialized.' })
+    async initiate(@Body() initiateDonationDto: InitiateDonationDto) {
+        return this.donationsService.initiateDonation(initiateDonationDto);
+    }
+
     @Post()
     @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-    @ApiOperation({ summary: 'Create a new donation' })
+    @ApiOperation({ summary: 'Create a new donation (admin)' })
     @ApiResponse({ status: 201, description: 'The donation has been successfully created.', type: DonationResponseDto })
     async create(@Body() createDonationDto: CreateDonationDto): Promise<DonationResponseDto> {
         const donation = await this.donationsService.create(createDonationDto);

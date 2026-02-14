@@ -11,6 +11,7 @@ import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagg
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { CampaignsPageOptionsDto } from './dto/campaigns-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('Campaigns')
 @ApiBearerAuth()
@@ -29,6 +30,7 @@ export class CampaignsController {
     }
 
     @Get()
+    @Public()
     @Roles(UserRole.STAKEHOLDER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
     @ApiOperation({ summary: 'Get all campaigns with pagination and search' })
     @ApiResponse({ status: 200, description: 'Return all campaigns.', type: PageDto<CampaignResponseDto> })

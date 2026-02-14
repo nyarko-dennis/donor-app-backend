@@ -22,9 +22,8 @@ export class PaystackStrategy implements PaymentProvider {
             const response = await axios.post(
                 `${this.baseUrl}/transaction/initialize`,
                 {
-                    amount: Math.round(data.amount * 100), // Paystack expects amount in kobo/cents
+                    amount: Math.round(data.amount * 100), // Paystack expects amount in kobo/pesewas
                     email: data.email,
-                    currency: data.currency || 'GHS',
                     metadata: data.metadata,
                 },
                 {

@@ -1,7 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { Donor } from '../donors/donor.entity';
 import { Campaign } from '../campaigns/campaign.entity';
 import { DonationCause } from '../donation-causes/donation-cause.entity';
+import { Transaction } from './transaction.entity';
 
 @Entity('donations')
 export class Donation {
@@ -41,15 +42,6 @@ export class Donation {
     @Column({ nullable: true })
     donation_cause_id: string;
 
-    @Column({ default: 'PENDING' })
-    status: 'PENDING' | 'SUCCESS' | 'FAILED';
-
-    @Column({ nullable: true })
-    reference: string;
-
-    @Column({ nullable: true })
-    idempotency_key: string;
-
-    @Column({ nullable: true })
-    provider: string; // 'paystack', 'flutterwave', etc.
+    @OneToOne(() => Transaction, (transaction) => transaction.donation, { nullable: true, cascade: true })
+    transaction: Transaction;
 }
