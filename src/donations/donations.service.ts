@@ -16,6 +16,9 @@ import { QueueService } from '../queue/queue.service';
 import { DonationJob } from './jobs/donation.job';
 import * as crypto from 'crypto';
 
+import { Constituency } from '../constituencies/constituency.entity';
+import { SubConstituency } from '../constituencies/sub-constituency.entity';
+
 @Injectable()
 export class DonationsService implements OnModuleInit {
     private readonly logger = new Logger(DonationsService.name);
@@ -29,6 +32,10 @@ export class DonationsService implements OnModuleInit {
         private donorsRepository: Repository<Donor>,
         @InjectRepository(Campaign)
         private campaignsRepository: Repository<Campaign>,
+        @InjectRepository(Constituency)
+        private constituenciesRepository: Repository<Constituency>,
+        @InjectRepository(SubConstituency)
+        private subConstituenciesRepository: Repository<SubConstituency>,
         private paymentService: PaymentService,
         private queueService: QueueService,
         private donationJob: DonationJob,
@@ -142,18 +149,36 @@ export class DonationsService implements OnModuleInit {
     async initiateDonation(dto: InitiateDonationDto) {
         // 1. Find or create donor by email
         let donor = await this.donorsRepository.findOneBy({ email: dto.donor.email });
+
         if (!donor) {
-            donor = this.donorsRepository.create({
+            let constituencyName: string | undefined;
+            if (dto.donor.constituency_id) {
+                const c = await this.constituenciesRepository.findOneBy({ id: dto.donor.constituency_id });
+                constituencyName = c?.name;
+            }
+
+            let subConstituencyName: string | undefined;
+            if (dto.donor.sub_constituency_id) {
+                const sc = await this.subConstituenciesRepository.findOneBy({ id: dto.donor.sub_constituency_id });
+                subConstituencyName = sc?.name;
+            }
+
+            const newDonor = this.donorsRepository.create({
                 first_name: dto.donor.first_name,
                 last_name: dto.donor.last_name,
                 email: dto.donor.email,
                 phone: dto.donor.phone,
                 constituency_id: dto.donor.constituency_id,
                 sub_constituency_id: dto.donor.sub_constituency_id,
-            });
-            donor = await this.donorsRepository.save(donor);
-            this.logger.log(`Created new donor: ${donor.id} (${donor.email})`);
+                constituency: constituencyName,
+                sub_constituency: subConstituencyName,
+            } as any);
+
+            donor = (await this.donorsRepository.save(newDonor)) as any;
+            this.logger.log(`Created new donor: ${(donor as Donor).id} (${(donor as Donor).email})`);
         }
+
+        const safeDonor = donor!;
 
         // 2. Verify campaign exists
         const campaign = await this.campaignsRepository.findOneBy({ id: dto.campaignId });
@@ -169,7 +194,7 @@ export class DonationsService implements OnModuleInit {
             amount: dto.amount,
             currency: 'GHS',
             payment_method: dto.payment_method,
-            donor,
+            donor: safeDonor,
             campaign,
             donation_cause_id: dto.donation_cause || undefined,
             donation_date: new Date(),

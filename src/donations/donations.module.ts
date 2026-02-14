@@ -10,12 +10,20 @@ import { DonorsModule } from '../donors/donors.module';
 import { CampaignsModule } from '../campaigns/campaigns.module';
 import { Donor } from '../donors/donor.entity';
 import { Campaign } from '../campaigns/campaign.entity';
-
 import { DonationJob } from './jobs/donation.job';
+import { Constituency } from '../constituencies/constituency.entity';
+import { SubConstituency } from '../constituencies/sub-constituency.entity';
 
 @Module({
     imports: [
-        TypeOrmModule.forFeature([Donation, Transaction, Donor, Campaign]),
+        TypeOrmModule.forFeature([
+            Donation,
+            Transaction,
+            Donor,
+            Campaign,
+            Constituency,
+            SubConstituency
+        ]),
         forwardRef(() => PaymentModule),
         QueueModule,
         DonorsModule,
