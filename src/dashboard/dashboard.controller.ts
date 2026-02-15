@@ -12,7 +12,7 @@ export class DashboardController {
     constructor(private readonly dashboardService: DashboardService) { }
 
     @Get('stats')
-    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.STAKEHOLDER)
     async getStats(): Promise<DashboardStatsDto> {
         return this.dashboardService.getStats();
     }
