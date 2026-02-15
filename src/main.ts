@@ -9,7 +9,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3005', 'https://bunny-suitable-conversely.ngrok-free.app'],
+    origin: ['http://localhost:3001', 'http://localhost:3005', 'https://bunny-suitable-conversely.ngrok-free.app', 'https://gisebidonorplatformpay-1083711950183.us-central1.run.app', 'https://gisebidonorplatformcms-1083711950183.us-central1.run.app'],
     credentials: true,
   });
   app.setGlobalPrefix('api');
