@@ -9,15 +9,19 @@ export class QueueService implements OnModuleInit, OnModuleDestroy {
     constructor(private configService: ConfigService) { }
 
     async onModuleInit() {
-        const host = this.configService.get<string>('DB_HOST');
+        const host = this.configService.get<string>('DB_HOST') || '';
         const port = this.configService.get<number>('DB_PORT');
-        const user = this.configService.get<string>('DB_USERNAME');
+        const username = this.configService.get<string>('DB_USERNAME');
         const password = this.configService.get<string>('DB_PASSWORD');
         const database = this.configService.get<string>('DB_NAME');
 
-        const connectionString = `postgres://${user}:${password}@${host}:${port}/${database}`;
-
-        this.boss = new PgBoss(connectionString);
+        this.boss = new PgBoss({
+            host,
+            port,
+            user: username,
+            password,
+            database,
+        });
         this.boss.on('error', (error) => console.error(error));
 
         await this.boss.start();
