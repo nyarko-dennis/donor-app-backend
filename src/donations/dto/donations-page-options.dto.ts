@@ -45,5 +45,5 @@ export class DonationsPageOptionsDto extends PageOptionsDto {
     @ApiPropertyOptional()
     @IsString()
     @IsOptional()
-    readonly paymentMethod?: string;
+    readonly payment_method?: string;
 }

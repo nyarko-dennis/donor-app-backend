@@ -18,6 +18,7 @@ import * as crypto from 'crypto';
 
 import { Constituency } from '../constituencies/constituency.entity';
 import { SubConstituency } from '../constituencies/sub-constituency.entity';
+import { DonationCause } from '../donation-causes/donation-cause.entity';
 
 @Injectable()
 export class DonationsService implements OnModuleInit {
@@ -36,6 +37,8 @@ export class DonationsService implements OnModuleInit {
         private constituenciesRepository: Repository<Constituency>,
         @InjectRepository(SubConstituency)
         private subConstituenciesRepository: Repository<SubConstituency>,
+        @InjectRepository(DonationCause)
+        private donationCausesRepository: Repository<DonationCause>,
         private paymentService: PaymentService,
         private queueService: QueueService,
         private donationJob: DonationJob,
@@ -61,10 +64,21 @@ export class DonationsService implements OnModuleInit {
             throw new NotFoundException(`Campaign with ID ${campaignId} not found`);
         }
 
+        let cause: DonationCause | null = null;
+        if (donationData.donation_cause) {
+            cause = await this.donationCausesRepository.findOneBy({ name: donationData.donation_cause });
+            if (!cause) {
+                // Determine if we should throw error or create? 
+                // Given the scenario, throwing error is safer for data integrity if causes are managed entities.
+                throw new NotFoundException(`Donation Cause '${donationData.donation_cause}' not found`);
+            }
+        }
+
         const donation = this.donationsRepository.create({
             ...donationData,
             donor,
             campaign,
+            cause: cause || undefined,
         });
 
         return this.donationsRepository.save(donation);
@@ -113,8 +127,8 @@ export class DonationsService implements OnModuleInit {
             queryBuilder.andWhere('donation.donation_date <= :endDate', { endDate: pageOptionsDto.endDate });
         }
 
-        if (pageOptionsDto.paymentMethod) {
-            queryBuilder.andWhere('donation.payment_method = :paymentMethod', { paymentMethod: pageOptionsDto.paymentMethod });
+        if (pageOptionsDto.payment_method) {
+            queryBuilder.andWhere('donation.payment_method = :paymentMethod', { paymentMethod: pageOptionsDto.payment_method });
         }
 
         queryBuilder

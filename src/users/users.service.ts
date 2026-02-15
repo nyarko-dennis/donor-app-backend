@@ -84,8 +84,8 @@ export class UsersService {
             queryBuilder.andWhere('user.role = :role', { role: pageOptionsDto.role });
         }
 
-        if (pageOptionsDto.isActive !== undefined) {
-            queryBuilder.andWhere('user.is_active = :isActive', { isActive: pageOptionsDto.isActive });
+        if (pageOptionsDto.is_active !== undefined) {
+            queryBuilder.andWhere('user.is_active = :isActive', { isActive: pageOptionsDto.is_active });
         }
 
         queryBuilder

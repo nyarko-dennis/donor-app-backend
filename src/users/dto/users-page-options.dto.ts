@@ -1,6 +1,6 @@
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString } from 'class-validator';
 import { PageOptionsDto } from '../../common/dto/page-options.dto';
 import { UserRole } from '../user.entity';
@@ -12,8 +12,12 @@ export class UsersPageOptionsDto extends PageOptionsDto {
     readonly role?: UserRole;
 
     @ApiPropertyOptional()
-    @Type(() => Boolean)
+    @Transform(({ value }) => {
+        if (value === 'true') return true;
+        if (value === 'false') return false;
+        return value;
+    })
     @IsBoolean()
     @IsOptional()
-    readonly isActive?: boolean;
+    readonly is_active?: boolean;
 }

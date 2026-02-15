@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { Constituency } from '../constituencies/constituency.entity';
 import { SubConstituency } from '../constituencies/sub-constituency.entity';
+import { Donation } from '../donations/donation.entity';
 
 @Entity('donors')
 export class Donor {
@@ -41,4 +42,7 @@ export class Donor {
 
     @CreateDateColumn({ type: 'date' })
     date_joined: Date;
+
+    @OneToMany(() => Donation, (donation) => donation.donor)
+    donations: Donation[];
 }

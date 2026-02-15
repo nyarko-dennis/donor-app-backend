@@ -13,6 +13,7 @@ import { Campaign } from '../campaigns/campaign.entity';
 import { DonationJob } from './jobs/donation.job';
 import { Constituency } from '../constituencies/constituency.entity';
 import { SubConstituency } from '../constituencies/sub-constituency.entity';
+import { DonationCause } from '../donation-causes/donation-cause.entity';
 
 @Module({
     imports: [
@@ -22,7 +23,8 @@ import { SubConstituency } from '../constituencies/sub-constituency.entity';
             Donor,
             Campaign,
             Constituency,
-            SubConstituency
+            SubConstituency,
+            DonationCause
         ]),
         forwardRef(() => PaymentModule),
         QueueModule,

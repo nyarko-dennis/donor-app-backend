@@ -51,8 +51,16 @@ export class DonorsService {
         return new PageDto(entities, pageMetaDto);
     }
 
-    findOne(id: string): Promise<Donor | null> {
-        return this.donorsRepository.findOneBy({ id });
+    async findOne(id: string): Promise<Donor | null> {
+        return this.donorsRepository.findOne({
+            where: { id },
+            relations: ['donations', 'donations.cause', 'donations.campaign', 'donations.transaction'],
+            order: {
+                donations: {
+                    donation_date: 'DESC'
+                }
+            }
+        });
     }
 
     async remove(id: string): Promise<void> {

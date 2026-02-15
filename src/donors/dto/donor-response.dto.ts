@@ -32,6 +32,9 @@ export class DonorResponseDto {
     @ApiProperty()
     created_at: Date;
 
+    @ApiProperty({ required: false })
+    donations?: any[];
+
     constructor(donor: Donor) {
         this.id = donor.id;
         this.first_name = donor.first_name;
@@ -43,5 +46,8 @@ export class DonorResponseDto {
         this.constituency_id = donor.constituency_id;
         this.sub_constituency_id = donor.sub_constituency_id;
         this.created_at = donor.date_joined;
+        if (donor.donations) {
+            this.donations = donor.donations;
+        }
     }
 }

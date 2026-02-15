@@ -1,6 +1,6 @@
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { IsOptional, IsString, IsUUID } from 'class-validator';
 import { PageOptionsDto } from '../../common/dto/page-options.dto';
 
 export class DonorsPageOptionsDto extends PageOptionsDto {
@@ -13,4 +13,9 @@ export class DonorsPageOptionsDto extends PageOptionsDto {
     @IsUUID()
     @IsOptional()
     readonly subConstituencyId?: string;
+
+    @ApiPropertyOptional({ description: 'Column name to sort by', default: 'date_joined' })
+    @IsString()
+    @IsOptional()
+    readonly sortBy?: string = 'date_joined';
 }
