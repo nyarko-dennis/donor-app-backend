@@ -74,20 +74,22 @@ export class ExportsService {
 
         const donations = await queryBuilder.getMany();
 
-        return donations.map(d => ({
-            'ID': d.id,
-            'Amount': d.amount,
-            'Currency': d.currency,
-            'Donor Name': `${d.donor?.first_name || ''} ${d.donor?.last_name || ''}`.trim(),
-            'Donor Email': d.donor?.email,
-            'Campaign': d.campaign?.name,
-            'Cause': d.cause?.name,
-            'Payment Method': d.payment_method,
-            'Constituency': d.constituency?.name,
-            'Sub-Constituency': d.sub_constituency?.name,
-            'Transaction Ref': d.transaction?.reference,
-            'Date': d.donation_date,
-        }));
+        return donations.map(d => {
+            const dateObj = d.donation_date ? new Date(d.donation_date) : null;
+            return {
+                'Amount': d.amount,
+                'Currency': d.currency,
+                'Donor Name': `${d.donor?.first_name || ''} ${d.donor?.last_name || ''}`.trim(),
+                'Donor Email': d.donor?.email,
+                'Campaign': d.campaign?.name,
+                'Cause': d.cause?.name,
+                'Payment Method': d.payment_method,
+                'Constituency': d.constituency?.name,
+                'Sub-Constituency': d.sub_constituency?.name,
+                'Date': dateObj ? dateObj.toISOString().split('T')[0] : '',
+                'Time': dateObj ? dateObj.toISOString().split('T')[1].split('.')[0] : '',
+            };
+        });
     }
 
     private async getDonors(filters?: ExportFiltersDto): Promise<any[]> {
@@ -101,16 +103,19 @@ export class ExportsService {
 
         const donors = await queryBuilder.getMany();
 
-        return donors.map(d => ({
-            'ID': d.id,
-            'First Name': d.first_name,
-            'Last Name': d.last_name,
-            'Email': d.email,
-            'Phone': d.phone,
-            'Constituency': d.constituency || d.constituency_entity?.name,
-            'Sub-Constituency': d.sub_constituency || d.sub_constituency_entity?.name,
-            'Date Joined': d.date_joined,
-        }));
+        return donors.map(d => {
+            const dateObj = d.date_joined ? new Date(d.date_joined) : null;
+            return {
+                'First Name': d.first_name,
+                'Last Name': d.last_name,
+                'Email': d.email,
+                'Phone': d.phone,
+                'Constituency': d.constituency || d.constituency_entity?.name,
+                'Sub-Constituency': d.sub_constituency || d.sub_constituency_entity?.name,
+                'Date Joined': dateObj ? dateObj.toISOString().split('T')[0] : '',
+                'Time Joined': dateObj ? dateObj.toISOString().split('T')[1].split('.')[0] : '',
+            };
+        });
     }
 
     private async getCampaigns(filters?: ExportFiltersDto): Promise<any[]> {
@@ -123,17 +128,20 @@ export class ExportsService {
 
         const campaigns = await queryBuilder.getMany();
 
-        return campaigns.map(c => ({
-            'ID': c.id,
-            'Name': c.name,
-            'Description': c.description,
-            'Target Audience': c.target_audience,
-            'Goal Amount': c.goal_amount,
-            'Start Date': c.start_date,
-            'End Date': c.end_date,
-            'Status': c.status,
-            'Created At': c.created_at,
-        }));
+        return campaigns.map(c => {
+            const createdAt = c.created_at ? new Date(c.created_at) : null;
+            return {
+                'Name': c.name,
+                'Description': c.description,
+                'Target Audience': c.target_audience,
+                'Goal Amount': c.goal_amount,
+                'Start Date': c.start_date,
+                'End Date': c.end_date,
+                'Status': c.status,
+                'Created Date': createdAt ? createdAt.toISOString().split('T')[0] : '',
+                'Created Time': createdAt ? createdAt.toISOString().split('T')[1].split('.')[0] : '',
+            };
+        });
     }
 
     private applyDonationFilters(qb: SelectQueryBuilder<Donation>, filters: ExportFiltersDto) {
