@@ -9,7 +9,7 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: ['http://localhost:3001', 'http://localhost:3005', 'https://bunny-suitable-conversely.ngrok-free.app', 'https://gisebidonorplatformcms-555954816336.us-central1.run.app', 'https://gisebidonorplatformpay-555954816336.us-central1.run.app'],
+    origin: ['http://localhost:3001', 'http://localhost:3005', 'https://bunny-suitable-conversely.ngrok-free.app', 'https://pay.gisdonorman.goyazi.com', 'https://gisdonorman.goyazi.com'],
     credentials: true,
   });
   app.setGlobalPrefix('api');
