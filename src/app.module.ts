@@ -35,7 +35,7 @@ import { ExportsModule } from './exports/exports.module';
           database: configService.get<string>('DB_NAME'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: true, // Auto-create tables (dev only)
-          //ssl: { rejectUnauthorized: false },
+          ssl: { rejectUnauthorized: false },
         };
       },
       inject: [ConfigService],
