@@ -14,6 +14,7 @@ import { ConstituenciesModule } from './constituencies/constituencies.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { QueueModule } from './queue/queue.module';
 import { ExportsModule } from './exports/exports.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { ExportsModule } from './exports/exports.module';
     DashboardModule,
     QueueModule,
     ExportsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
