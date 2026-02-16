@@ -164,28 +164,23 @@ export class DonationsService implements OnModuleInit {
         // 1. Find or create donor by email
         let donor = await this.donorsRepository.findOneBy({ email: dto.donor.email });
 
+        let constituency: Constituency | null = null;
+        if (dto.donor.constituency_id) {
+            constituency = await this.constituenciesRepository.findOneBy({ id: dto.donor.constituency_id });
+        }
+
+        let subConstituency: SubConstituency | null = null;
+        if (dto.donor.sub_constituency_id) {
+            subConstituency = await this.subConstituenciesRepository.findOneBy({ id: dto.donor.sub_constituency_id });
+        }
+
         if (!donor) {
-            let constituencyName: string | undefined;
-            if (dto.donor.constituency_id) {
-                const c = await this.constituenciesRepository.findOneBy({ id: dto.donor.constituency_id });
-                constituencyName = c?.name;
-            }
-
-            let subConstituencyName: string | undefined;
-            if (dto.donor.sub_constituency_id) {
-                const sc = await this.subConstituenciesRepository.findOneBy({ id: dto.donor.sub_constituency_id });
-                subConstituencyName = sc?.name;
-            }
-
             const newDonor = this.donorsRepository.create({
                 first_name: dto.donor.first_name,
                 last_name: dto.donor.last_name,
                 email: dto.donor.email,
                 phone: dto.donor.phone,
-                constituency_id: dto.donor.constituency_id,
-                sub_constituency_id: dto.donor.sub_constituency_id,
-                constituency: constituencyName,
-                sub_constituency: subConstituencyName,
+                // We no longer link constituency to donor
             } as any);
 
             donor = (await this.donorsRepository.save(newDonor)) as any;
@@ -212,6 +207,8 @@ export class DonationsService implements OnModuleInit {
             campaign,
             donation_cause_id: dto.donation_cause || undefined,
             donation_date: new Date(),
+            constituency: constituency || undefined,
+            sub_constituency: subConstituency || undefined,
         });
 
         const savedDonation = await this.donationsRepository.save(donation);

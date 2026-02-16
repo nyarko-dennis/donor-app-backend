@@ -3,6 +3,8 @@ import { Donor } from '../donors/donor.entity';
 import { Campaign } from '../campaigns/campaign.entity';
 import { DonationCause } from '../donation-causes/donation-cause.entity';
 import { Transaction } from './transaction.entity';
+import { Constituency } from '../constituencies/constituency.entity';
+import { SubConstituency } from '../constituencies/sub-constituency.entity';
 
 @Entity('donations')
 export class Donation {
@@ -44,4 +46,18 @@ export class Donation {
 
     @OneToOne(() => Transaction, (transaction) => transaction.donation, { nullable: true, cascade: true })
     transaction: Transaction;
+
+    @ManyToOne(() => Constituency, { nullable: true })
+    @JoinColumn({ name: 'constituency_id' })
+    constituency: Constituency;
+
+    @Column({ nullable: true })
+    constituency_id: string;
+
+    @ManyToOne(() => SubConstituency, { nullable: true })
+    @JoinColumn({ name: 'sub_constituency_id' })
+    sub_constituency: SubConstituency;
+
+    @Column({ nullable: true })
+    sub_constituency_id: string;
 }

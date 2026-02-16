@@ -13,6 +13,7 @@ import { DonationCausesModule } from './donation-causes/donation-causes.module';
 import { ConstituenciesModule } from './constituencies/constituencies.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { QueueModule } from './queue/queue.module';
+import { ExportsModule } from './exports/exports.module';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { QueueModule } from './queue/queue.module';
           database: configService.get<string>('DB_NAME'),
           entities: [__dirname + '/**/*.entity{.ts,.js}'],
           synchronize: true, // Auto-create tables (dev only)
-          ssl: { rejectUnauthorized: false },
+          //ssl: { rejectUnauthorized: false },
         };
       },
       inject: [ConfigService],
@@ -49,6 +50,7 @@ import { QueueModule } from './queue/queue.module';
     ConstituenciesModule,
     DashboardModule,
     QueueModule,
+    ExportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
