@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Patch, NotFoundException } from '@nestjs/common';
 import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
+import { UpdateDonationDto } from './dto/update-donation.dto';
 import { InitiateDonationDto } from './dto/initiate-donation.dto';
 import { DonationResponseDto } from './dto/donation-response.dto';
 import { Donation } from './donation.entity';
@@ -65,5 +66,17 @@ export class DonationsController {
     @ApiResponse({ status: 200, description: 'The donation has been successfully deleted.' })
     remove(@Param('id') id: string): Promise<void> {
         return this.donationsService.remove(id);
+    }
+
+    @Patch(':id')
+    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+    @ApiOperation({ summary: 'Update a donation' })
+    @ApiResponse({ status: 200, description: 'The donation has been successfully updated.', type: DonationResponseDto })
+    async update(@Param('id') id: string, @Body() updateDonationDto: UpdateDonationDto): Promise<DonationResponseDto> {
+        const donation = await this.donationsService.update(id, updateDonationDto);
+        if (!donation) {
+            throw new NotFoundException(`Donation with ID ${id} not found`);
+        }
+        return new DonationResponseDto(donation);
     }
 }

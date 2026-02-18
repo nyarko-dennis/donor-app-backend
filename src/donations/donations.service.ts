@@ -171,9 +171,69 @@ export class DonationsService implements OnModuleInit {
         });
     }
 
-    async update(id: string, updateDonationDto: UpdateDonationDto) {
-        await this.donationsRepository.update(id, updateDonationDto);
-        return this.donationsRepository.findOne({ where: { id } });
+    async update(id: string, updateDonationDto: UpdateDonationDto): Promise<Donation | null> {
+        const { donorId, campaignId, donation_cause, constituency_id, sub_constituency_id, ...donationData } = updateDonationDto;
+
+        const donation = await this.donationsRepository.findOne({
+            where: { id },
+            relations: ['donor', 'campaign', 'cause', 'constituency', 'sub_constituency'],
+        });
+
+        if (!donation) {
+            throw new NotFoundException(`Donation with ID ${id} not found`);
+        }
+
+        const allowedMethods = ['cash', 'in kind'];
+        const currentMethod = donation.payment_method?.toLowerCase() || '';
+        if (!allowedMethods.includes(currentMethod)) {
+            throw new BadRequestException(
+                `Only donations with payment method 'Cash' or 'In Kind' can be edited. This donation has '${donation.payment_method}'.`,
+            );
+        }
+
+        if (donorId) {
+            const donor = await this.donorsRepository.findOneBy({ id: donorId });
+            if (!donor) {
+                throw new NotFoundException(`Donor with ID ${donorId} not found`);
+            }
+            donation.donor = donor;
+        }
+
+        if (campaignId) {
+            const campaign = await this.campaignsRepository.findOneBy({ id: campaignId });
+            if (!campaign) {
+                throw new NotFoundException(`Campaign with ID ${campaignId} not found`);
+            }
+            donation.campaign = campaign;
+        }
+
+        if (donation_cause) {
+            const cause = await this.donationCausesRepository.findOneBy({ name: donation_cause });
+            if (!cause) {
+                throw new NotFoundException(`Donation Cause '${donation_cause}' not found`);
+            }
+            donation.cause = cause;
+        }
+
+        if (constituency_id) {
+            const constituency = await this.constituenciesRepository.findOneBy({ id: constituency_id });
+            if (!constituency) {
+                throw new NotFoundException(`Constituency with ID ${constituency_id} not found`);
+            }
+            donation.constituency = constituency;
+        }
+
+        if (sub_constituency_id) {
+            const subConstituency = await this.subConstituenciesRepository.findOneBy({ id: sub_constituency_id });
+            if (!subConstituency) {
+                throw new NotFoundException(`Sub-Constituency with ID ${sub_constituency_id} not found`);
+            }
+            donation.sub_constituency = subConstituency;
+        }
+
+        Object.assign(donation, donationData);
+
+        return this.donationsRepository.save(donation);
     }
 
     async remove(id: string): Promise<void> {

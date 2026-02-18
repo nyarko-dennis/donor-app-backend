@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsUUID } from 'class-validator';
+import { IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateDonationDto {
     @ApiProperty({ example: 100.50 })
@@ -25,4 +25,19 @@ export class CreateDonationDto {
     @ApiProperty({ example: 'uuid-of-campaign' })
     @IsUUID()
     campaignId: string;
+
+    @ApiProperty({ example: '2024-01-01T00:00:00Z', required: false })
+    @IsString()
+    @IsOptional()
+    donation_date?: string;
+
+    @ApiProperty({ example: 'uuid-of-constituency', required: false })
+    @IsUUID()
+    @IsOptional()
+    constituency_id?: string;
+
+    @ApiProperty({ example: 'uuid-of-sub-constituency', required: false })
+    @IsUUID()
+    @IsOptional()
+    sub_constituency_id?: string;
 }
