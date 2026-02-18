@@ -140,7 +140,15 @@ export class DonationsService implements OnModuleInit {
         }
 
         if (pageOptionsDto.payment_method) {
-            queryBuilder.andWhere('donation.payment_method = :paymentMethod', { paymentMethod: pageOptionsDto.payment_method });
+            if (Array.isArray(pageOptionsDto.payment_method)) {
+                queryBuilder.andWhere('donation.payment_method IN (:...paymentMethods)', {
+                    paymentMethods: pageOptionsDto.payment_method,
+                });
+            } else {
+                queryBuilder.andWhere('donation.payment_method = :paymentMethod', {
+                    paymentMethod: pageOptionsDto.payment_method,
+                });
+            }
         }
 
         queryBuilder

@@ -45,8 +45,9 @@ export class DonationsPageOptionsDto extends PageOptionsDto {
     @IsOptional()
     readonly endDate?: string;
 
-    @ApiPropertyOptional()
-    @IsString()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated payment methods' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly payment_method?: string;
+    readonly payment_method?: string | string[];
 }
