@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsDateString } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class AnalyticsFilterDto {
     @IsOptional()
@@ -10,10 +11,12 @@ export class AnalyticsFilterDto {
     endDate?: string;
 
     @IsOptional()
-    @IsString()
-    campaignId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    campaignId?: string | string[];
 
     @IsOptional()
-    @IsString()
-    constituencyId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    constituencyId?: string | string[];
 }

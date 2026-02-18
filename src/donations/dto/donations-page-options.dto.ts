@@ -1,24 +1,27 @@
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsDateString, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { PageOptionsDto } from '../../common/dto/page-options.dto';
 
 export class DonationsPageOptionsDto extends PageOptionsDto {
-    @ApiPropertyOptional()
-    @IsUUID()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated donor IDs' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly donorId?: string;
+    readonly donorId?: string | string[];
 
-    @ApiPropertyOptional()
-    @IsUUID()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated campaign IDs' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly campaignId?: string;
+    readonly campaignId?: string | string[];
 
-    @ApiPropertyOptional()
-    @IsUUID()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated cause IDs' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly causeId?: string;
+    readonly causeId?: string | string[];
 
     @ApiPropertyOptional()
     @Type(() => Number)

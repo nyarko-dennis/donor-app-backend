@@ -25,10 +25,18 @@ export class AnalyticsService {
             qb.andWhere('donation.donation_date <= :endDate', { endDate: filter.endDate });
         }
         if (filter.campaignId) {
-            qb.andWhere('donation.campaign_id = :campaignId', { campaignId: filter.campaignId });
+            if (Array.isArray(filter.campaignId)) {
+                qb.andWhere('donation.campaign_id IN (:...campaignIds)', { campaignIds: filter.campaignId });
+            } else {
+                qb.andWhere('donation.campaign_id = :campaignId', { campaignId: filter.campaignId });
+            }
         }
         if (filter.constituencyId) {
-            qb.andWhere('donation.constituency_id = :constituencyId', { constituencyId: filter.constituencyId });
+            if (Array.isArray(filter.constituencyId)) {
+                qb.andWhere('donation.constituency_id IN (:...constituencyIds)', { constituencyIds: filter.constituencyId });
+            } else {
+                qb.andWhere('donation.constituency_id = :constituencyId', { constituencyId: filter.constituencyId });
+            }
         }
     }
 
@@ -51,7 +59,11 @@ export class AnalyticsService {
             donorQb.andWhere('donor.date_joined <= :endDate', { endDate: filter.endDate });
         }
         if (filter.constituencyId) {
-            donorQb.andWhere('donor.constituency_id = :constituencyId', { constituencyId: filter.constituencyId });
+            if (Array.isArray(filter.constituencyId)) {
+                donorQb.andWhere('donor.constituency_id IN (:...constituencyIds)', { constituencyIds: filter.constituencyId });
+            } else {
+                donorQb.andWhere('donor.constituency_id = :constituencyId', { constituencyId: filter.constituencyId });
+            }
         }
 
         const donorStats = await donorQb.getRawOne();

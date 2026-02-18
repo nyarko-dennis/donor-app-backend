@@ -30,7 +30,11 @@ export class CampaignsService {
         }
 
         if (pageOptionsDto.status) {
-            queryBuilder.andWhere('campaign.status = :status', { status: pageOptionsDto.status });
+            if (Array.isArray(pageOptionsDto.status)) {
+                queryBuilder.andWhere('campaign.status IN (:...statuses)', { statuses: pageOptionsDto.status });
+            } else {
+                queryBuilder.andWhere('campaign.status = :status', { status: pageOptionsDto.status });
+            }
         }
 
         if (pageOptionsDto.minGoal) {

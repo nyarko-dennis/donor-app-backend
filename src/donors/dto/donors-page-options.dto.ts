@@ -1,18 +1,20 @@
-
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 import { PageOptionsDto } from '../../common/dto/page-options.dto';
 
 export class DonorsPageOptionsDto extends PageOptionsDto {
-    @ApiPropertyOptional()
-    @IsUUID()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated constituency IDs' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly constituencyId?: string;
+    readonly constituencyId?: string | string[];
 
-    @ApiPropertyOptional()
-    @IsUUID()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated sub-constituency IDs' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly subConstituencyId?: string;
+    readonly subConstituencyId?: string | string[];
 
     @ApiPropertyOptional({ description: 'Column name to sort by', default: 'date_joined' })
     @IsString()

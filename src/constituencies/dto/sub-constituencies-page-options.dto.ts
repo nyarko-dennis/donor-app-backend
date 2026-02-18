@@ -1,11 +1,13 @@
 
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsUUID } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 import { PageOptionsDto } from '../../common/dto/page-options.dto';
 
 export class SubConstituenciesPageOptionsDto extends PageOptionsDto {
-    @ApiPropertyOptional()
-    @IsUUID()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated constituency IDs' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
     @IsOptional()
-    readonly constituencyId?: string;
+    readonly constituencyId?: string | string[];
 }

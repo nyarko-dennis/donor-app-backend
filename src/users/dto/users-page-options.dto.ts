@@ -6,10 +6,11 @@ import { PageOptionsDto } from '../../common/dto/page-options.dto';
 import { UserRole } from '../user.entity';
 
 export class UsersPageOptionsDto extends PageOptionsDto {
-    @ApiPropertyOptional({ enum: UserRole })
-    @IsEnum(UserRole)
+    @ApiPropertyOptional({ enum: UserRole, type: String, description: 'Comma-separated roles' })
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsEnum(UserRole, { each: true })
     @IsOptional()
-    readonly role?: UserRole;
+    readonly role?: UserRole | UserRole[];
 
     @ApiPropertyOptional()
     @Transform(({ value }) => {

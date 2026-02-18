@@ -161,19 +161,39 @@ export class ExportsService {
             qb.andWhere('donation.amount <= :maxAmount', { maxAmount: filters.maxAmount });
         }
         if (filters.campaignId) {
-            qb.andWhere('donation.campaign.id = :campaignId', { campaignId: filters.campaignId });
+            if (Array.isArray(filters.campaignId)) {
+                qb.andWhere('donation.campaign.id IN (:...campaignIds)', { campaignIds: filters.campaignId });
+            } else {
+                qb.andWhere('donation.campaign.id = :campaignId', { campaignId: filters.campaignId });
+            }
         }
         if (filters.causeId) {
-            qb.andWhere('donation.cause.id = :causeId', { causeId: filters.causeId });
+            if (Array.isArray(filters.causeId)) {
+                qb.andWhere('donation.cause.id IN (:...causeIds)', { causeIds: filters.causeId });
+            } else {
+                qb.andWhere('donation.cause.id = :causeId', { causeId: filters.causeId });
+            }
         }
         if (filters.donorId) {
-            qb.andWhere('donation.donor.id = :donorId', { donorId: filters.donorId });
+            if (Array.isArray(filters.donorId)) {
+                qb.andWhere('donation.donor.id IN (:...donorIds)', { donorIds: filters.donorId });
+            } else {
+                qb.andWhere('donation.donor.id = :donorId', { donorId: filters.donorId });
+            }
         }
         if (filters.constituencyId) {
-            qb.andWhere('donation.constituency.id = :constituencyId', { constituencyId: filters.constituencyId });
+            if (Array.isArray(filters.constituencyId)) {
+                qb.andWhere('donation.constituency.id IN (:...constituencyIds)', { constituencyIds: filters.constituencyId });
+            } else {
+                qb.andWhere('donation.constituency.id = :constituencyId', { constituencyId: filters.constituencyId });
+            }
         }
         if (filters.subConstituencyId) {
-            qb.andWhere('donation.sub_constituency.id = :subConstituencyId', { subConstituencyId: filters.subConstituencyId });
+            if (Array.isArray(filters.subConstituencyId)) {
+                qb.andWhere('donation.sub_constituency.id IN (:...subConstituencyIds)', { subConstituencyIds: filters.subConstituencyId });
+            } else {
+                qb.andWhere('donation.sub_constituency.id = :subConstituencyId', { subConstituencyId: filters.subConstituencyId });
+            }
         }
     }
 
@@ -182,10 +202,18 @@ export class ExportsService {
             qb.andWhere('(donor.first_name ILIKE :search OR donor.last_name ILIKE :search OR donor.email ILIKE :search)', { search: `%${filters.search}%` });
         }
         if (filters.constituencyId) {
-            qb.andWhere('donor.constituency_id = :constituencyId', { constituencyId: filters.constituencyId });
+            if (Array.isArray(filters.constituencyId)) {
+                qb.andWhere('donor.constituency_id IN (:...constituencyIds)', { constituencyIds: filters.constituencyId });
+            } else {
+                qb.andWhere('donor.constituency_id = :constituencyId', { constituencyId: filters.constituencyId });
+            }
         }
         if (filters.subConstituencyId) {
-            qb.andWhere('donor.sub_constituency_id = :subConstituencyId', { subConstituencyId: filters.subConstituencyId });
+            if (Array.isArray(filters.subConstituencyId)) {
+                qb.andWhere('donor.sub_constituency_id IN (:...subConstituencyIds)', { subConstituencyIds: filters.subConstituencyId });
+            } else {
+                qb.andWhere('donor.sub_constituency_id = :subConstituencyId', { subConstituencyId: filters.subConstituencyId });
+            }
         }
         if (filters.startDate) {
             qb.andWhere('donor.date_joined >= :startDate', { startDate: filters.startDate });

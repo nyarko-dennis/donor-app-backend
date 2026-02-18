@@ -81,7 +81,11 @@ export class UsersService {
         }
 
         if (pageOptionsDto.role) {
-            queryBuilder.andWhere('user.role = :role', { role: pageOptionsDto.role });
+            if (Array.isArray(pageOptionsDto.role)) {
+                queryBuilder.andWhere('user.role IN (:...roles)', { roles: pageOptionsDto.role });
+            } else {
+                queryBuilder.andWhere('user.role = :role', { role: pageOptionsDto.role });
+            }
         }
 
         if (pageOptionsDto.is_active !== undefined) {

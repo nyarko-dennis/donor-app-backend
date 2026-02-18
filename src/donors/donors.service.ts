@@ -31,11 +31,27 @@ export class DonorsService {
         }
 
         if (pageOptionsDto.constituencyId) {
-            queryBuilder.andWhere('donor.constituency_id = :constituencyId', { constituencyId: pageOptionsDto.constituencyId });
+            if (Array.isArray(pageOptionsDto.constituencyId)) {
+                queryBuilder.andWhere('donor.constituency_id IN (:...constituencyIds)', {
+                    constituencyIds: pageOptionsDto.constituencyId,
+                });
+            } else {
+                queryBuilder.andWhere('donor.constituency_id = :constituencyId', {
+                    constituencyId: pageOptionsDto.constituencyId,
+                });
+            }
         }
 
         if (pageOptionsDto.subConstituencyId) {
-            queryBuilder.andWhere('donor.sub_constituency_id = :subConstituencyId', { subConstituencyId: pageOptionsDto.subConstituencyId });
+            if (Array.isArray(pageOptionsDto.subConstituencyId)) {
+                queryBuilder.andWhere('donor.sub_constituency_id IN (:...subConstituencyIds)', {
+                    subConstituencyIds: pageOptionsDto.subConstituencyId,
+                });
+            } else {
+                queryBuilder.andWhere('donor.sub_constituency_id = :subConstituencyId', {
+                    subConstituencyId: pageOptionsDto.subConstituencyId,
+                });
+            }
         }
 
         queryBuilder

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToOne, JoinColumn, CreateDateColumn, DeleteDateColumn } from 'typeorm';
 import { Donor } from '../donors/donor.entity';
 import { Campaign } from '../campaigns/campaign.entity';
 import { DonationCause } from '../donation-causes/donation-cause.entity';
@@ -60,4 +60,7 @@ export class Donation {
 
     @Column({ nullable: true })
     sub_constituency_id: string;
+
+    @DeleteDateColumn()
+    deletedAt: Date;
 }

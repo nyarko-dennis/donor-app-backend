@@ -100,15 +100,27 @@ export class DonationsService implements OnModuleInit {
         }
 
         if (pageOptionsDto.donorId) {
-            queryBuilder.andWhere('donation.donor.id = :donorId', { donorId: pageOptionsDto.donorId });
+            if (Array.isArray(pageOptionsDto.donorId)) {
+                queryBuilder.andWhere('donation.donor.id IN (:...donorIds)', { donorIds: pageOptionsDto.donorId });
+            } else {
+                queryBuilder.andWhere('donation.donor.id = :donorId', { donorId: pageOptionsDto.donorId });
+            }
         }
 
         if (pageOptionsDto.campaignId) {
-            queryBuilder.andWhere('donation.campaign.id = :campaignId', { campaignId: pageOptionsDto.campaignId });
+            if (Array.isArray(pageOptionsDto.campaignId)) {
+                queryBuilder.andWhere('donation.campaign.id IN (:...campaignIds)', { campaignIds: pageOptionsDto.campaignId });
+            } else {
+                queryBuilder.andWhere('donation.campaign.id = :campaignId', { campaignId: pageOptionsDto.campaignId });
+            }
         }
 
         if (pageOptionsDto.causeId) {
-            queryBuilder.andWhere('donation.cause.id = :causeId', { causeId: pageOptionsDto.causeId });
+            if (Array.isArray(pageOptionsDto.causeId)) {
+                queryBuilder.andWhere('donation.cause.id IN (:...causeIds)', { causeIds: pageOptionsDto.causeId });
+            } else {
+                queryBuilder.andWhere('donation.cause.id = :causeId', { causeId: pageOptionsDto.causeId });
+            }
         }
 
         if (pageOptionsDto.minAmount) {
@@ -157,7 +169,7 @@ export class DonationsService implements OnModuleInit {
     }
 
     async remove(id: string): Promise<void> {
-        await this.donationsRepository.delete(id);
+        await this.donationsRepository.softDelete(id);
     }
 
     async initiateDonation(dto: InitiateDonationDto) {

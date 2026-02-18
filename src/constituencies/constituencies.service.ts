@@ -92,7 +92,15 @@ export class ConstituenciesService {
         }
 
         if (pageOptionsDto.constituencyId) {
-            queryBuilder.andWhere('sub_constituency.constituency_id = :constituencyId', { constituencyId: pageOptionsDto.constituencyId });
+            if (Array.isArray(pageOptionsDto.constituencyId)) {
+                queryBuilder.andWhere('sub_constituency.constituency_id IN (:...constituencyIds)', {
+                    constituencyIds: pageOptionsDto.constituencyId,
+                });
+            } else {
+                queryBuilder.andWhere('sub_constituency.constituency_id = :constituencyId', {
+                    constituencyId: pageOptionsDto.constituencyId,
+                });
+            }
         }
 
         queryBuilder

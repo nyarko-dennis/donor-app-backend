@@ -1,6 +1,6 @@
 
 import { IsEnum, IsOptional, ValidateNested, IsString, IsArray, IsNumber, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ExportEntity {
@@ -26,30 +26,35 @@ export class ExportFiltersDto {
     @IsString()
     search?: string;
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated donor IDs' })
     @IsOptional()
-    @IsString()
-    donorId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    donorId?: string | string[];
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated campaign IDs' })
     @IsOptional()
-    @IsString()
-    campaignId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    campaignId?: string | string[];
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated cause IDs' })
     @IsOptional()
-    @IsString()
-    causeId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    causeId?: string | string[];
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated constituency IDs' })
     @IsOptional()
-    @IsString()
-    constituencyId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    constituencyId?: string | string[];
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ type: String, description: 'Comma-separated sub-constituency IDs' })
     @IsOptional()
-    @IsString()
-    subConstituencyId?: string;
+    @Transform(({ value }) => (typeof value === 'string' ? value.split(',') : value))
+    @IsString({ each: true })
+    subConstituencyId?: string | string[];
 
     @ApiPropertyOptional()
     @IsOptional()
