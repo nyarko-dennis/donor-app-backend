@@ -30,7 +30,7 @@ export class ExportsService {
     private donorsRepository: Repository<Donor>,
     @InjectRepository(Campaign)
     private campaignsRepository: Repository<Campaign>,
-  ) {}
+  ) { }
 
   async exportData(request: ExportRequestDto): Promise<StreamableFile> {
     let data: any[] = [];
@@ -86,19 +86,40 @@ export class ExportsService {
 
     return donations.map((d) => {
       const dateObj = d.donation_date ? new Date(d.donation_date) : null;
+      const constituencyName = d.constituency?.name || '';
+      const constituencyLower = constituencyName.toLowerCase();
+
+      let confirmedReceipt = '';
+      const paymentMethod = (d.payment_method || '').toLowerCase();
+
+      if (paymentMethod === 'cash' || paymentMethod === 'in-kind' || paymentMethod === 'in kind') {
+        confirmedReceipt = 'Received';
+      } else if (d.transaction) {
+        if (d.transaction.status === 'SUCCESS') {
+          confirmedReceipt = 'Success';
+        } else if (d.transaction.status === 'PENDING') {
+          confirmedReceipt = 'Pending';
+        } else if (d.transaction.status === 'FAILED') {
+          confirmedReceipt = 'Failed';
+        }
+      }
+
       return {
-        Amount: d.amount,
-        Currency: d.currency,
-        'Donor Name':
-          `${d.donor?.first_name || ''} ${d.donor?.last_name || ''}`.trim(),
-        'Donor Email': d.donor?.email,
-        Campaign: d.campaign?.name,
-        Cause: d.cause?.name,
-        'Payment Method': d.payment_method,
-        Constituency: d.constituency?.name,
-        'Sub-Constituency': d.sub_constituency?.name,
-        Date: dateObj ? dateObj.toISOString().split('T')[0] : '',
-        Time: dateObj ? dateObj.toISOString().split('T')[1].split('.')[0] : '',
+        'Donated By': `${d.donor?.first_name || ''} ${d.donor?.last_name || ''}`.trim(),
+        'Constituency (Glance)': constituencyName,
+        'Board': constituencyLower.includes('board'),
+        'Mgmt': constituencyLower.includes('mgmt') || constituencyLower.includes('management'),
+        'Staff': constituencyLower.includes('staff'),
+        'Student': constituencyLower.includes('student'),
+        'Parent': constituencyLower.includes('parent'),
+        'Alum': constituencyLower.includes('alum') || constituencyLower.includes('alumni'),
+        'Friend': constituencyLower.includes('friend'),
+        'Section': d.sub_constituency?.name || '',
+        'Cause': d.cause?.name || '',
+        'Amount': d.amount,
+        'Payment Method': d.payment_method || '',
+        'Date': dateObj || '',
+        'Confirmed Receipt': confirmedReceipt,
       };
     });
   }
@@ -323,6 +344,17 @@ export class ExportsService {
       }));
 
       worksheet.addRows(data);
+
+      worksheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          if (typeof cell.value === 'boolean') {
+            cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          }
+          if (cell.value instanceof Date) {
+            cell.numFmt = 'dd/MM/yyyy';
+          }
+        });
+      });
     }
 
     return await workbook.xlsx.writeBuffer();
