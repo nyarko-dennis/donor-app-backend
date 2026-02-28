@@ -38,7 +38,8 @@ export class MailService {
   }
 
   async sendPasswordResetEmail(to: string, token: string) {
-    const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const resetLink = `${baseUrl}/reset-password?token=${token}`;
     const htmlMessage = getForgotPasswordEmail(resetLink);
 
     if (this.transporter) {
