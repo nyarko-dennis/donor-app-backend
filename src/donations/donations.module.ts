@@ -14,6 +14,7 @@ import { DonationJob } from './jobs/donation.job';
 import { Constituency } from '../constituencies/constituency.entity';
 import { SubConstituency } from '../constituencies/sub-constituency.entity';
 import { DonationCause } from '../donation-causes/donation-cause.entity';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -30,9 +31,10 @@ import { DonationCause } from '../donation-causes/donation-cause.entity';
     QueueModule,
     DonorsModule,
     CampaignsModule,
+    MailModule,
   ],
   providers: [DonationsService, DonationJob],
   exports: [DonationsService],
   controllers: [DonationsController],
 })
-export class DonationsModule {}
+export class DonationsModule { }

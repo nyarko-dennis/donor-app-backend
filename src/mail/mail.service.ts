@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
+import { getForgotPasswordEmail } from './templates/forgot-password';
+import { getDonationSuccessEmail } from './templates/donation-success';
+import * as path from 'path';
 
 @Injectable()
 export class MailService {
   private transporter;
+  private readonly logger = new Logger(MailService.name);
 
   constructor() {
     // For development, we log to console (or use Ethereal if configured)
@@ -21,27 +25,56 @@ export class MailService {
     }
   }
 
+  // Shared generic attachment array referencing our core asset setup
+  private get defaultAttachments() {
+    return [
+      {
+        filename: 'gis_logo.png',
+        // In production / dist, this resolved relative to __dirname (which is dist/mail)
+        path: path.join(__dirname, 'resources', 'gis_logo.png'),
+        cid: 'gis_logo',
+      },
+    ];
+  }
+
   async sendPasswordResetEmail(to: string, token: string) {
     const resetLink = `http://localhost:3000/auth/reset-password?token=${token}`;
-    const message = `
-      <h1>Password Reset Request</h1>
-      <p>Click the link below to reset your password:</p>
-      <a href="${resetLink}">${resetLink}</a>
-      <p>If you did not request this, please ignore this email.</p>
-    `;
+    const htmlMessage = getForgotPasswordEmail(resetLink);
 
     if (this.transporter) {
       await this.transporter.sendMail({
-        from: '"Donor App" <noreply@donorapp.com>',
+        from: '"GIS" <hello@gis.edu.gh>',
         to,
-        subject: 'Password Reset',
-        html: message,
+        subject: 'Reset Your Password',
+        html: htmlMessage,
+        attachments: this.defaultAttachments,
       });
-      console.log(`[MailService] Email sent to ${to}`);
+      this.logger.log(`[MailService] Email sent to ${to}`);
     } else {
-      console.log(`[MailService] Mock Sending Email to ${to}`);
-      console.log(`[MailService] Subject: Password Reset`);
-      console.log(`[MailService] Body: ${resetLink}`);
+      this.logger.log(`[MailService] Mock Sending Email to ${to}`);
+      this.logger.log(`[MailService] Subject: Reset Your Password`);
+    }
+  }
+
+  async sendDonationSuccessEmail(
+    to: string,
+    amount: number,
+    reference: string,
+  ) {
+    const htmlMessage = getDonationSuccessEmail(amount, reference);
+
+    if (this.transporter) {
+      await this.transporter.sendMail({
+        from: '"GIS" <hello@gis.edu.gh>',
+        to,
+        subject: 'Donation Receipt',
+        html: htmlMessage,
+        attachments: this.defaultAttachments,
+      });
+      this.logger.log(`[MailService] Donation Receipt sent to ${to}`);
+    } else {
+      this.logger.log(`[MailService] Mock Sending Donation Receipt to ${to}`);
+      this.logger.log(`[MailService] Subject: Donation Receipt`);
     }
   }
 }

@@ -10,6 +10,7 @@ import {
 import { Constituency } from '../constituencies/constituency.entity';
 import { SubConstituency } from '../constituencies/sub-constituency.entity';
 import { Donation } from '../donations/donation.entity';
+import { Class } from '../classes/class.entity';
 
 @Entity('donors')
 export class Donor {
@@ -47,6 +48,13 @@ export class Donor {
 
   @Column({ length: 50, nullable: true })
   sub_constituency: string;
+
+  @ManyToOne(() => Class, { nullable: true })
+  @JoinColumn({ name: 'class_id' })
+  class_entity: Class;
+
+  @Column({ nullable: true })
+  class_id: string;
 
   @CreateDateColumn({ type: 'date' })
   date_joined: Date;

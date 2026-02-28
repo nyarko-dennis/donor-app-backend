@@ -22,7 +22,7 @@ export class Class {
   @Column('int', { nullable: true })
   order: number;
 
-  @Column('uuid')
+  @Column('uuid', { nullable: true })
   sub_constituency_id: string;
 
   @ManyToOne(

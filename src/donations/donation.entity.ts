@@ -14,6 +14,7 @@ import { DonationCause } from '../donation-causes/donation-cause.entity';
 import { Transaction } from './transaction.entity';
 import { Constituency } from '../constituencies/constituency.entity';
 import { SubConstituency } from '../constituencies/sub-constituency.entity';
+import { Class } from '../classes/class.entity';
 
 @Entity('donations')
 export class Donation {
@@ -43,7 +44,7 @@ export class Donation {
   @Column({ length: 30, nullable: true })
   payment_method: string;
 
-  @CreateDateColumn()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   donation_date: Date;
 
   @ManyToOne(() => DonationCause, { nullable: true })
@@ -72,6 +73,13 @@ export class Donation {
 
   @Column({ nullable: true })
   sub_constituency_id: string;
+
+  @ManyToOne(() => Class, { nullable: true })
+  @JoinColumn({ name: 'class_id' })
+  class_entity: Class;
+
+  @Column({ nullable: true })
+  class_id: string;
 
   @DeleteDateColumn()
   deletedAt: Date;
