@@ -11,6 +11,7 @@ import { UsersModule } from './users/users.module';
 import { PaymentModule } from './payment/payment.module';
 import { DonationCausesModule } from './donation-causes/donation-causes.module';
 import { ConstituenciesModule } from './constituencies/constituencies.module';
+import { ClassesModule } from './classes/classes.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { QueueModule } from './queue/queue.module';
 import { ExportsModule } from './exports/exports.module';
@@ -49,6 +50,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     PaymentModule,
     DonationCausesModule,
     ConstituenciesModule,
+    ClassesModule,
     DashboardModule,
     QueueModule,
     ExportsModule,
@@ -57,4 +59,4 @@ import { AnalyticsModule } from './analytics/analytics.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+} from '@nestjs/common';
 import { ConstituenciesService } from './constituencies.service';
 import { CreateConstituencyDto } from './dto/create-constituency.dto';
 import { UpdateConstituencyDto } from './dto/update-constituency.dto';
@@ -16,79 +25,135 @@ import { Public } from '../auth/public.decorator';
 @ApiTags('Constituencies')
 @Controller('constituencies')
 export class ConstituenciesController {
-    constructor(private readonly constituenciesService: ConstituenciesService) { }
+  constructor(private readonly constituenciesService: ConstituenciesService) {}
 
-    @Post()
-    @ApiResponse({ status: 201, description: 'Constituency created.', type: ConstituencyResponseDto })
-    create(@Body() createConstituencyDto: CreateConstituencyDto) {
-        return this.constituenciesService.create(createConstituencyDto);
-    }
+  @Post()
+  @ApiResponse({
+    status: 201,
+    description: 'Constituency created.',
+    type: ConstituencyResponseDto,
+  })
+  create(@Body() createConstituencyDto: CreateConstituencyDto) {
+    return this.constituenciesService.create(createConstituencyDto);
+  }
 
-    @Get()
-    @Public()
-    @ApiOperation({ summary: 'List all constituencies' })
-    @ApiResponse({ status: 200, description: 'List all constituencies.', type: PageDto<ConstituencyResponseDto> })
-    findAll(@Query() pageOptionsDto: ConstituenciesPageOptionsDto) {
-        return this.constituenciesService.findAll(pageOptionsDto);
-    }
+  @Get()
+  @Public()
+  @ApiOperation({ summary: 'List all constituencies' })
+  @ApiResponse({
+    status: 200,
+    description: 'List all constituencies.',
+    type: PageDto<ConstituencyResponseDto>,
+  })
+  findAll(@Query() pageOptionsDto: ConstituenciesPageOptionsDto) {
+    return this.constituenciesService.findAll(pageOptionsDto);
+  }
 
-    @Get(':id')
-    @ApiResponse({ status: 200, description: 'Get one constituency.', type: ConstituencyResponseDto })
-    findOne(@Param('id') id: string) {
-        return this.constituenciesService.findOne(id);
-    }
+  @Get(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'Get one constituency.',
+    type: ConstituencyResponseDto,
+  })
+  findOne(@Param('id') id: string) {
+    return this.constituenciesService.findOne(id);
+  }
 
-    @Patch(':id')
-    @ApiResponse({ status: 200, description: 'Update constituency.', type: ConstituencyResponseDto })
-    update(@Param('id') id: string, @Body() updateConstituencyDto: UpdateConstituencyDto) {
-        return this.constituenciesService.update(id, updateConstituencyDto);
-    }
+  @Patch(':id')
+  @ApiResponse({
+    status: 200,
+    description: 'Update constituency.',
+    type: ConstituencyResponseDto,
+  })
+  update(
+    @Param('id') id: string,
+    @Body() updateConstituencyDto: UpdateConstituencyDto,
+  ) {
+    return this.constituenciesService.update(id, updateConstituencyDto);
+  }
 
-    @Delete(':id')
-    @ApiResponse({ status: 200, description: 'Delete constituency.' })
-    remove(@Param('id') id: string) {
-        return this.constituenciesService.remove(id);
-    }
+  @Delete(':id')
+  @ApiResponse({ status: 200, description: 'Delete constituency.' })
+  remove(@Param('id') id: string) {
+    return this.constituenciesService.remove(id);
+  }
 
-    // Sub-Constituencies Endpoints
-    @Post(':id/sub-constituencies')
-    @ApiResponse({ status: 201, description: 'Sub-Constituency created.', type: SubConstituencyResponseDto })
-    createSubConstituency(@Param('id') constituencyId: string, @Body() createSubConstituencyDto: CreateSubConstituencyDto) {
-        // Ensure the ID in the URL matches the DTO or override it
-        createSubConstituencyDto.constituency_id = constituencyId;
-        return this.constituenciesService.createSubConstituency(createSubConstituencyDto);
-    }
+  // Sub-Constituencies Endpoints
+  @Post(':id/sub-constituencies')
+  @ApiResponse({
+    status: 201,
+    description: 'Sub-Constituency created.',
+    type: SubConstituencyResponseDto,
+  })
+  createSubConstituency(
+    @Param('id') constituencyId: string,
+    @Body() createSubConstituencyDto: CreateSubConstituencyDto,
+  ) {
+    // Ensure the ID in the URL matches the DTO or override it
+    createSubConstituencyDto.constituency_id = constituencyId;
+    return this.constituenciesService.createSubConstituency(
+      createSubConstituencyDto,
+    );
+  }
 
-    @Patch('sub-constituencies/:id')
-    @ApiResponse({ status: 200, description: 'Update sub-constituency.', type: SubConstituencyResponseDto })
-    updateSubConstituency(@Param('id') id: string, @Body() updateSubConstituencyDto: UpdateSubConstituencyDto) {
-        return this.constituenciesService.updateSubConstituency(id, updateSubConstituencyDto);
-    }
+  @Patch('sub-constituencies/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Update sub-constituency.',
+    type: SubConstituencyResponseDto,
+  })
+  updateSubConstituency(
+    @Param('id') id: string,
+    @Body() updateSubConstituencyDto: UpdateSubConstituencyDto,
+  ) {
+    return this.constituenciesService.updateSubConstituency(
+      id,
+      updateSubConstituencyDto,
+    );
+  }
 
-    @Delete('sub-constituencies/:id')
-    @ApiResponse({ status: 200, description: 'Delete sub-constituency.' })
-    removeSubConstituency(@Param('id') id: string) {
-        return this.constituenciesService.removeSubConstituency(id);
-    }
-    @Get('sub-constituencies/all')
-    @Public()
-    @ApiOperation({ summary: 'List all sub-constituencies (paginated)' })
-    @ApiResponse({ status: 200, description: 'List all sub-constituencies.', type: PageDto<SubConstituencyResponseDto> })
-    findAllSubConstituencies(@Query() pageOptionsDto: SubConstituenciesPageOptionsDto) {
-        return this.constituenciesService.findAllSubConstituencies(pageOptionsDto);
-    }
+  @Delete('sub-constituencies/:id')
+  @ApiResponse({ status: 200, description: 'Delete sub-constituency.' })
+  removeSubConstituency(@Param('id') id: string) {
+    return this.constituenciesService.removeSubConstituency(id);
+  }
+  @Get('sub-constituencies/all')
+  @Public()
+  @ApiOperation({ summary: 'List all sub-constituencies (paginated)' })
+  @ApiResponse({
+    status: 200,
+    description: 'List all sub-constituencies.',
+    type: PageDto<SubConstituencyResponseDto>,
+  })
+  findAllSubConstituencies(
+    @Query() pageOptionsDto: SubConstituenciesPageOptionsDto,
+  ) {
+    return this.constituenciesService.findAllSubConstituencies(pageOptionsDto);
+  }
 
-    @Get(':id/sub-constituencies')
-    @Public()
-    @ApiOperation({ summary: 'List all sub-constituencies for a specific constituency' })
-    @ApiResponse({ status: 200, description: 'List all sub-constituencies for a constituency.', type: [SubConstituencyResponseDto] })
-    findByConstituency(@Param('id') id: string) {
-        return this.constituenciesService.findAllSubConstituenciesByConstituencyId(id);
-    }
+  @Get(':id/sub-constituencies')
+  @Public()
+  @ApiOperation({
+    summary: 'List all sub-constituencies for a specific constituency',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'List all sub-constituencies for a constituency.',
+    type: [SubConstituencyResponseDto],
+  })
+  findByConstituency(@Param('id') id: string) {
+    return this.constituenciesService.findAllSubConstituenciesByConstituencyId(
+      id,
+    );
+  }
 
-    @Get('sub-constituencies/:id')
-    @ApiResponse({ status: 200, description: 'Get one sub-constituency.', type: SubConstituencyResponseDto })
-    findSubConstituency(@Param('id') id: string) {
-        return this.constituenciesService.findSubConstituency(id);
-    }
+  @Get('sub-constituencies/:id')
+  @ApiResponse({
+    status: 200,
+    description: 'Get one sub-constituency.',
+    type: SubConstituencyResponseDto,
+  })
+  findSubConstituency(@Param('id') id: string) {
+    return this.constituenciesService.findSubConstituency(id);
+  }
 }

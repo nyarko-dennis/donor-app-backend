@@ -3,72 +3,72 @@ import { Type } from 'class-transformer';
 import { Donation } from '../../donations/donation.entity';
 
 export class DashboardSummaryDto {
-    @IsNumber()
-    totalDonations: number;
+  @IsNumber()
+  totalDonations: number;
 
-    @IsNumber()
-    totalDonors: number;
+  @IsNumber()
+  totalDonors: number;
 
-    @IsNumber()
-    activeCampaigns: number;
+  @IsNumber()
+  activeCampaigns: number;
 
-    @IsNumber()
-    averageDonation: number;
+  @IsNumber()
+  averageDonation: number;
 }
 
 export class ChartDataDto {
-    @IsString()
-    label: string;
+  @IsString()
+  label: string;
 
-    @IsNumber()
-    value: number;
+  @IsNumber()
+  value: number;
 }
 
 export class DonationTrendDto {
-    @IsString()
-    date: string;
+  @IsString()
+  date: string;
 
-    @IsNumber()
-    amount: number;
+  @IsNumber()
+  amount: number;
 }
 
 export class DashboardChartsDto {
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => DonationTrendDto)
-    donationTrends: DonationTrendDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DonationTrendDto)
+  donationTrends: DonationTrendDto[];
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => ChartDataDto)
-    donationsByCampaign: ChartDataDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChartDataDto)
+  donationsByCampaign: ChartDataDto[];
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => ChartDataDto)
-    donorsByConstituency: ChartDataDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChartDataDto)
+  donorsByConstituency: ChartDataDto[];
 
-    @IsArray()
-    @ValidateNested({ each: true })
-    @Type(() => ChartDataDto)
-    paymentMethods: ChartDataDto[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ChartDataDto)
+  paymentMethods: ChartDataDto[];
 }
 
 export class DashboardActivityDto {
-    @IsArray()
-    recentDonations: Donation[];
+  @IsArray()
+  recentDonations: Donation[];
 }
 
 export class DashboardStatsDto {
-    @ValidateNested()
-    @Type(() => DashboardSummaryDto)
-    summary: DashboardSummaryDto;
+  @ValidateNested()
+  @Type(() => DashboardSummaryDto)
+  summary: DashboardSummaryDto;
 
-    @ValidateNested()
-    @Type(() => DashboardChartsDto)
-    charts: DashboardChartsDto;
+  @ValidateNested()
+  @Type(() => DashboardChartsDto)
+  charts: DashboardChartsDto;
 
-    @ValidateNested()
-    @Type(() => DashboardActivityDto)
-    recentActivity: DashboardActivityDto;
+  @ValidateNested()
+  @Type(() => DashboardActivityDto)
+  recentActivity: DashboardActivityDto;
 }

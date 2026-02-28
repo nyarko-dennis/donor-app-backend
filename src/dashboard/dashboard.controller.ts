@@ -9,11 +9,11 @@ import { UserRole } from '../users/user.entity';
 @Controller('dashboard')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DashboardController {
-    constructor(private readonly dashboardService: DashboardService) { }
+  constructor(private readonly dashboardService: DashboardService) {}
 
-    @Get('stats')
-    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.STAKEHOLDER)
-    async getStats(): Promise<DashboardStatsDto> {
-        return this.dashboardService.getStats();
-    }
+  @Get('stats')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.STAKEHOLDER)
+  async getStats(): Promise<DashboardStatsDto> {
+    return this.dashboardService.getStats();
+  }
 }

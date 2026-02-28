@@ -16,23 +16,23 @@ import { SubConstituency } from '../constituencies/sub-constituency.entity';
 import { DonationCause } from '../donation-causes/donation-cause.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([
-            Donation,
-            Transaction,
-            Donor,
-            Campaign,
-            Constituency,
-            SubConstituency,
-            DonationCause
-        ]),
-        forwardRef(() => PaymentModule),
-        QueueModule,
-        DonorsModule,
-        CampaignsModule,
-    ],
-    providers: [DonationsService, DonationJob],
-    exports: [DonationsService],
-    controllers: [DonationsController],
+  imports: [
+    TypeOrmModule.forFeature([
+      Donation,
+      Transaction,
+      Donor,
+      Campaign,
+      Constituency,
+      SubConstituency,
+      DonationCause,
+    ]),
+    forwardRef(() => PaymentModule),
+    QueueModule,
+    DonorsModule,
+    CampaignsModule,
+  ],
+  providers: [DonationsService, DonationJob],
+  exports: [DonationsService],
+  controllers: [DonationsController],
 })
-export class DonationsModule { }
+export class DonationsModule {}

@@ -4,8 +4,8 @@ import { ConfigModule } from '@nestjs/config';
 
 @Global()
 @Module({
-    imports: [ConfigModule],
-    providers: [QueueService],
-    exports: [QueueService],
+  imports: [ConfigModule],
+  providers: [QueueService],
+  exports: [QueueService],
 })
-export class QueueModule { }
+export class QueueModule {}

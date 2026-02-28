@@ -6,9 +6,9 @@ import { Constituency } from './constituency.entity';
 import { SubConstituency } from './sub-constituency.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Constituency, SubConstituency])],
-    controllers: [ConstituenciesController],
-    providers: [ConstituenciesService],
-    exports: [ConstituenciesService]
+  imports: [TypeOrmModule.forFeature([Constituency, SubConstituency])],
+  controllers: [ConstituenciesController],
+  providers: [ConstituenciesService],
+  exports: [ConstituenciesService],
 })
-export class ConstituenciesModule { }
+export class ConstituenciesModule {}

@@ -9,9 +9,9 @@ import { QueueModule } from '../queue/queue.module';
 import { DonationsModule } from '../donations/donations.module';
 
 @Module({
-    imports: [ConfigModule, QueueModule, forwardRef(() => DonationsModule)],
-    controllers: [PaymentController, WebhookController],
-    providers: [PaymentService, PaystackStrategy, PaymentFactory],
-    exports: [PaymentService, PaymentFactory],
+  imports: [ConfigModule, QueueModule, forwardRef(() => DonationsModule)],
+  controllers: [PaymentController, WebhookController],
+  providers: [PaymentService, PaystackStrategy, PaymentFactory],
+  exports: [PaymentService, PaymentFactory],
 })
-export class PaymentModule { }
+export class PaymentModule {}

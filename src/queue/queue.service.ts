@@ -4,43 +4,43 @@ import { PgBoss } from 'pg-boss';
 
 @Injectable()
 export class QueueService implements OnModuleInit, OnModuleDestroy {
-    private boss: PgBoss;
+  private boss: PgBoss;
 
-    constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
 
-    async onModuleInit() {
-        const host = this.configService.get<string>('DB_HOST') || '';
-        const port = this.configService.get<number>('DB_PORT');
-        const username = this.configService.get<string>('DB_USERNAME');
-        const password = this.configService.get<string>('DB_PASSWORD');
-        const database = this.configService.get<string>('DB_NAME');
+  async onModuleInit() {
+    const host = this.configService.get<string>('DB_HOST') || '';
+    const port = this.configService.get<number>('DB_PORT');
+    const username = this.configService.get<string>('DB_USERNAME');
+    const password = this.configService.get<string>('DB_PASSWORD');
+    const database = this.configService.get<string>('DB_NAME');
 
-        this.boss = new PgBoss({
-            host,
-            port,
-            user: username,
-            password,
-            database,
-        });
-        this.boss.on('error', (error) => console.error(error));
+    this.boss = new PgBoss({
+      host,
+      port,
+      user: username,
+      password,
+      database,
+    });
+    this.boss.on('error', (error) => console.error(error));
 
-        await this.boss.start();
-        console.log('PgBoss started');
-    }
+    await this.boss.start();
+    console.log('PgBoss started');
+  }
 
-    async onModuleDestroy() {
-        await this.boss.stop();
-    }
+  async onModuleDestroy() {
+    await this.boss.stop();
+  }
 
-    async send(queue: string, data: any) {
-        await this.boss.createQueue(queue);
-        return this.boss.send(queue, data);
-    }
+  async send(queue: string, data: any) {
+    await this.boss.createQueue(queue);
+    return this.boss.send(queue, data);
+  }
 
-    async subscribe(queue: string, callback: (job: any) => Promise<void>) {
-        await this.boss.createQueue(queue);
-        await this.boss.work(queue, async (job) => {
-            await callback(job);
-        });
-    }
+  async subscribe(queue: string, callback: (job: any) => Promise<void>) {
+    await this.boss.createQueue(queue);
+    await this.boss.work(queue, async (job) => {
+      await callback(job);
+    });
+  }
 }

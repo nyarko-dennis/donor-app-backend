@@ -5,9 +5,9 @@ import { DonationCausesController } from './donation-causes.controller';
 import { DonationCause } from './donation-cause.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([DonationCause])],
-    controllers: [DonationCausesController],
-    providers: [DonationCausesService],
-    exports: [DonationCausesService], // Exported for use in other modules if needed
+  imports: [TypeOrmModule.forFeature([DonationCause])],
+  controllers: [DonationCausesController],
+  providers: [DonationCausesService],
+  exports: [DonationCausesService], // Exported for use in other modules if needed
 })
-export class DonationCausesModule { }
+export class DonationCausesModule {}

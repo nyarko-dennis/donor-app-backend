@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Param, Delete, UseGuards, Query, Patch, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+  Patch,
+  NotFoundException,
+} from '@nestjs/common';
 import { DonationsService } from './donations.service';
 import { CreateDonationDto } from './dto/create-donation.dto';
 import { UpdateDonationDto } from './dto/update-donation.dto';
@@ -10,7 +21,12 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { Public } from '../auth/public.decorator';
 import { UserRole } from '../users/user.entity';
-import { ApiBearerAuth, ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { DonationsPageOptionsDto } from './dto/donations-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
@@ -20,63 +36,92 @@ import { PageDto } from '../common/dto/page.dto';
 @Controller('donations')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class DonationsController {
-    constructor(private readonly donationsService: DonationsService) { }
+  constructor(private readonly donationsService: DonationsService) {}
 
-    @Post('initiate')
-    @Public()
-    @ApiOperation({ summary: 'Initiate a public donation with Paystack payment' })
-    @ApiResponse({ status: 201, description: 'Donation created and payment initialized.' })
-    async initiate(@Body() initiateDonationDto: InitiateDonationDto) {
-        return this.donationsService.initiateDonation(initiateDonationDto);
-    }
+  @Post('initiate')
+  @Public()
+  @ApiOperation({ summary: 'Initiate a public donation with Paystack payment' })
+  @ApiResponse({
+    status: 201,
+    description: 'Donation created and payment initialized.',
+  })
+  async initiate(@Body() initiateDonationDto: InitiateDonationDto) {
+    return this.donationsService.initiateDonation(initiateDonationDto);
+  }
 
-    @Post()
-    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-    @ApiOperation({ summary: 'Create a new donation (admin)' })
-    @ApiResponse({ status: 201, description: 'The donation has been successfully created.', type: DonationResponseDto })
-    async create(@Body() createDonationDto: CreateDonationDto): Promise<DonationResponseDto> {
-        const donation = await this.donationsService.create(createDonationDto);
-        return new DonationResponseDto(donation);
-    }
+  @Post()
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Create a new donation (admin)' })
+  @ApiResponse({
+    status: 201,
+    description: 'The donation has been successfully created.',
+    type: DonationResponseDto,
+  })
+  async create(
+    @Body() createDonationDto: CreateDonationDto,
+  ): Promise<DonationResponseDto> {
+    const donation = await this.donationsService.create(createDonationDto);
+    return new DonationResponseDto(donation);
+  }
 
-    @Get()
-    @Roles(UserRole.STAKEHOLDER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
-    @ApiOperation({ summary: 'Get all donations with pagination and search' })
-    @ApiResponse({ status: 200, description: 'Return all donations.', type: PageDto<DonationResponseDto> })
-    async findAll(@Query() pageOptionsDto: DonationsPageOptionsDto): Promise<PageDto<DonationResponseDto>> {
-        const page = await this.donationsService.findAll(pageOptionsDto);
-        return new PageDto(
-            page.data.map((donation) => new DonationResponseDto(donation)),
-            page.meta,
-        );
-    }
+  @Get()
+  @Roles(UserRole.STAKEHOLDER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get all donations with pagination and search' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all donations.',
+    type: PageDto<DonationResponseDto>,
+  })
+  async findAll(
+    @Query() pageOptionsDto: DonationsPageOptionsDto,
+  ): Promise<PageDto<DonationResponseDto>> {
+    const page = await this.donationsService.findAll(pageOptionsDto);
+    return new PageDto(
+      page.data.map((donation) => new DonationResponseDto(donation)),
+      page.meta,
+    );
+  }
 
-    @Get(':id')
-    @Roles(UserRole.STAKEHOLDER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
-    @ApiOperation({ summary: 'Get a donation by ID' })
-    @ApiResponse({ status: 200, description: 'Return the donation.', type: DonationResponseDto })
-    async findOne(@Param('id') id: string): Promise<DonationResponseDto | null> {
-        const donation = await this.donationsService.findOne(id);
-        return donation ? new DonationResponseDto(donation) : null;
-    }
+  @Get(':id')
+  @Roles(UserRole.STAKEHOLDER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get a donation by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return the donation.',
+    type: DonationResponseDto,
+  })
+  async findOne(@Param('id') id: string): Promise<DonationResponseDto | null> {
+    const donation = await this.donationsService.findOne(id);
+    return donation ? new DonationResponseDto(donation) : null;
+  }
 
-    @Delete(':id')
-    @Roles(UserRole.SUPER_ADMIN)
-    @ApiOperation({ summary: 'Delete a donation' })
-    @ApiResponse({ status: 200, description: 'The donation has been successfully deleted.' })
-    remove(@Param('id') id: string): Promise<void> {
-        return this.donationsService.remove(id);
-    }
+  @Delete(':id')
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Delete a donation' })
+  @ApiResponse({
+    status: 200,
+    description: 'The donation has been successfully deleted.',
+  })
+  remove(@Param('id') id: string): Promise<void> {
+    return this.donationsService.remove(id);
+  }
 
-    @Patch(':id')
-    @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
-    @ApiOperation({ summary: 'Update a donation' })
-    @ApiResponse({ status: 200, description: 'The donation has been successfully updated.', type: DonationResponseDto })
-    async update(@Param('id') id: string, @Body() updateDonationDto: UpdateDonationDto): Promise<DonationResponseDto> {
-        const donation = await this.donationsService.update(id, updateDonationDto);
-        if (!donation) {
-            throw new NotFoundException(`Donation with ID ${id} not found`);
-        }
-        return new DonationResponseDto(donation);
+  @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update a donation' })
+  @ApiResponse({
+    status: 200,
+    description: 'The donation has been successfully updated.',
+    type: DonationResponseDto,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateDonationDto: UpdateDonationDto,
+  ): Promise<DonationResponseDto> {
+    const donation = await this.donationsService.update(id, updateDonationDto);
+    if (!donation) {
+      throw new NotFoundException(`Donation with ID ${id} not found`);
     }
+    return new DonationResponseDto(donation);
+  }
 }

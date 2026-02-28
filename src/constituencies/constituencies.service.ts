@@ -14,141 +14,185 @@ import { ConstituenciesPageOptionsDto } from './dto/constituencies-page-options.
 import { SubConstituenciesPageOptionsDto } from './dto/sub-constituencies-page-options.dto';
 @Injectable()
 export class ConstituenciesService {
-    constructor(
-        @InjectRepository(Constituency)
-        private constituenciesRepository: Repository<Constituency>,
-        @InjectRepository(SubConstituency)
-        private subConstituenciesRepository: Repository<SubConstituency>,
-    ) { }
+  constructor(
+    @InjectRepository(Constituency)
+    private constituenciesRepository: Repository<Constituency>,
+    @InjectRepository(SubConstituency)
+    private subConstituenciesRepository: Repository<SubConstituency>,
+  ) {}
 
-    // Constituency CRUD
-    async create(createConstituencyDto: CreateConstituencyDto): Promise<Constituency> {
-        const constituency = this.constituenciesRepository.create(createConstituencyDto);
-        return this.constituenciesRepository.save(constituency);
+  // Constituency CRUD
+  async create(
+    createConstituencyDto: CreateConstituencyDto,
+  ): Promise<Constituency> {
+    const constituency = this.constituenciesRepository.create(
+      createConstituencyDto,
+    );
+    return this.constituenciesRepository.save(constituency);
+  }
+
+  async findAll(
+    pageOptionsDto: ConstituenciesPageOptionsDto,
+  ): Promise<PageDto<Constituency>> {
+    const queryBuilder =
+      this.constituenciesRepository.createQueryBuilder('constituency');
+
+    if (pageOptionsDto.search) {
+      queryBuilder.where('constituency.name ILIKE :search', {
+        search: `%${pageOptionsDto.search}%`,
+      });
     }
 
-    async findAll(pageOptionsDto: ConstituenciesPageOptionsDto): Promise<PageDto<Constituency>> {
-        const queryBuilder = this.constituenciesRepository.createQueryBuilder('constituency');
+    queryBuilder
+      .leftJoinAndSelect(
+        'constituency.sub_constituencies',
+        'sub_constituencies',
+      )
+      .orderBy(
+        `constituency.${pageOptionsDto.sortBy || 'name'}`,
+        pageOptionsDto.order,
+      )
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.take);
 
-        if (pageOptionsDto.search) {
-            queryBuilder.where('constituency.name ILIKE :search', { search: `%${pageOptionsDto.search}%` });
-        }
+    const itemCount = await queryBuilder.getCount();
+    const { entities } = await queryBuilder.getRawAndEntities();
 
-        queryBuilder
-            .leftJoinAndSelect('constituency.sub_constituencies', 'sub_constituencies')
-            .orderBy(`constituency.${pageOptionsDto.sortBy || 'name'}`, pageOptionsDto.order)
-            .skip(pageOptionsDto.skip)
-            .take(pageOptionsDto.take);
+    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
 
-        const itemCount = await queryBuilder.getCount();
-        const { entities } = await queryBuilder.getRawAndEntities();
+    return new PageDto(entities, pageMetaDto);
+  }
 
-        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+  async findOne(id: string): Promise<Constituency> {
+    const constituency = await this.constituenciesRepository.findOne({
+      where: { id },
+      relations: ['sub_constituencies'],
+    });
+    if (!constituency) {
+      throw new NotFoundException(`Constituency with ID ${id} not found`);
+    }
+    return constituency;
+  }
 
-        return new PageDto(entities, pageMetaDto);
+  async update(
+    id: string,
+    updateConstituencyDto: UpdateConstituencyDto,
+  ): Promise<Constituency> {
+    const constituency = await this.findOne(id);
+    Object.assign(constituency, updateConstituencyDto);
+    return this.constituenciesRepository.save(constituency);
+  }
+
+  async remove(id: string): Promise<void> {
+    const result = await this.constituenciesRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Constituency with ID ${id} not found`);
+    }
+  }
+
+  // Sub-Constituency CRUD
+  async createSubConstituency(
+    createSubConstituencyDto: CreateSubConstituencyDto,
+  ): Promise<SubConstituency> {
+    const constituency = await this.findOne(
+      createSubConstituencyDto.constituency_id,
+    );
+    const subConstituency = this.subConstituenciesRepository.create({
+      ...createSubConstituencyDto,
+      constituency,
+    });
+    return this.subConstituenciesRepository.save(subConstituency);
+  }
+
+  async findAllSubConstituencies(
+    pageOptionsDto: SubConstituenciesPageOptionsDto,
+  ): Promise<PageDto<SubConstituency>> {
+    const queryBuilder =
+      this.subConstituenciesRepository.createQueryBuilder('sub_constituency');
+
+    if (pageOptionsDto.search) {
+      queryBuilder.where(
+        'sub_constituency.name ILIKE :search OR sub_constituency.description ILIKE :search',
+        {
+          search: `%${pageOptionsDto.search}%`,
+        },
+      );
     }
 
-    async findOne(id: string): Promise<Constituency> {
-        const constituency = await this.constituenciesRepository.findOne({
-            where: { id },
-            relations: ['sub_constituencies']
-        });
-        if (!constituency) {
-            throw new NotFoundException(`Constituency with ID ${id} not found`);
-        }
-        return constituency;
+    if (pageOptionsDto.constituencyId) {
+      if (Array.isArray(pageOptionsDto.constituencyId)) {
+        queryBuilder.andWhere(
+          'sub_constituency.constituency_id IN (:...constituencyIds)',
+          {
+            constituencyIds: pageOptionsDto.constituencyId,
+          },
+        );
+      } else {
+        queryBuilder.andWhere(
+          'sub_constituency.constituency_id = :constituencyId',
+          {
+            constituencyId: pageOptionsDto.constituencyId,
+          },
+        );
+      }
     }
 
-    async update(id: string, updateConstituencyDto: UpdateConstituencyDto): Promise<Constituency> {
-        const constituency = await this.findOne(id);
-        Object.assign(constituency, updateConstituencyDto);
-        return this.constituenciesRepository.save(constituency);
+    queryBuilder
+      .leftJoinAndSelect('sub_constituency.constituency', 'constituency')
+      .orderBy(
+        `sub_constituency.${pageOptionsDto.sortBy || 'name'}`,
+        pageOptionsDto.order,
+      )
+      .skip(pageOptionsDto.skip)
+      .take(pageOptionsDto.take);
+
+    const itemCount = await queryBuilder.getCount();
+    const { entities } = await queryBuilder.getRawAndEntities();
+
+    const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
+
+    return new PageDto(entities, pageMetaDto);
+  }
+
+  async findSubConstituency(id: string): Promise<SubConstituency> {
+    const subConstituency = await this.subConstituenciesRepository.findOne({
+      where: { id },
+      relations: ['constituency'],
+    });
+    if (!subConstituency) {
+      throw new NotFoundException(`SubConstituency with ID ${id} not found`);
     }
+    return subConstituency;
+  }
 
-    async remove(id: string): Promise<void> {
-        const result = await this.constituenciesRepository.delete(id);
-        if (result.affected === 0) {
-            throw new NotFoundException(`Constituency with ID ${id} not found`);
-        }
+  async findAllSubConstituenciesByConstituencyId(
+    constituencyId: string,
+  ): Promise<SubConstituency[]> {
+    return this.subConstituenciesRepository.find({
+      where: { constituency: { id: constituencyId } },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async updateSubConstituency(
+    id: string,
+    updateSubConstituencyDto: UpdateSubConstituencyDto,
+  ): Promise<SubConstituency> {
+    const subConstituency = await this.findSubConstituency(id);
+    if (updateSubConstituencyDto.constituency_id) {
+      const constituency = await this.findOne(
+        updateSubConstituencyDto.constituency_id,
+      );
+      subConstituency.constituency = constituency;
     }
+    Object.assign(subConstituency, updateSubConstituencyDto);
+    return this.subConstituenciesRepository.save(subConstituency);
+  }
 
-    // Sub-Constituency CRUD
-    async createSubConstituency(createSubConstituencyDto: CreateSubConstituencyDto): Promise<SubConstituency> {
-        const constituency = await this.findOne(createSubConstituencyDto.constituency_id);
-        const subConstituency = this.subConstituenciesRepository.create({
-            ...createSubConstituencyDto,
-            constituency
-        });
-        return this.subConstituenciesRepository.save(subConstituency);
+  async removeSubConstituency(id: string): Promise<void> {
+    const result = await this.subConstituenciesRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`SubConstituency with ID ${id} not found`);
     }
-
-    async findAllSubConstituencies(pageOptionsDto: SubConstituenciesPageOptionsDto): Promise<PageDto<SubConstituency>> {
-        const queryBuilder = this.subConstituenciesRepository.createQueryBuilder('sub_constituency');
-
-        if (pageOptionsDto.search) {
-            queryBuilder.where('sub_constituency.name ILIKE :search OR sub_constituency.description ILIKE :search', {
-                search: `%${pageOptionsDto.search}%`,
-            });
-        }
-
-        if (pageOptionsDto.constituencyId) {
-            if (Array.isArray(pageOptionsDto.constituencyId)) {
-                queryBuilder.andWhere('sub_constituency.constituency_id IN (:...constituencyIds)', {
-                    constituencyIds: pageOptionsDto.constituencyId,
-                });
-            } else {
-                queryBuilder.andWhere('sub_constituency.constituency_id = :constituencyId', {
-                    constituencyId: pageOptionsDto.constituencyId,
-                });
-            }
-        }
-
-        queryBuilder
-            .leftJoinAndSelect('sub_constituency.constituency', 'constituency')
-            .orderBy(`sub_constituency.${pageOptionsDto.sortBy || 'name'}`, pageOptionsDto.order)
-            .skip(pageOptionsDto.skip)
-            .take(pageOptionsDto.take);
-
-        const itemCount = await queryBuilder.getCount();
-        const { entities } = await queryBuilder.getRawAndEntities();
-
-        const pageMetaDto = new PageMetaDto({ itemCount, pageOptionsDto });
-
-        return new PageDto(entities, pageMetaDto);
-    }
-
-    async findSubConstituency(id: string): Promise<SubConstituency> {
-        const subConstituency = await this.subConstituenciesRepository.findOne({
-            where: { id },
-            relations: ['constituency'],
-        });
-        if (!subConstituency) {
-            throw new NotFoundException(`SubConstituency with ID ${id} not found`);
-        }
-        return subConstituency;
-    }
-
-    async findAllSubConstituenciesByConstituencyId(constituencyId: string): Promise<SubConstituency[]> {
-        return this.subConstituenciesRepository.find({
-            where: { constituency: { id: constituencyId } },
-            order: { name: 'ASC' },
-        });
-    }
-
-    async updateSubConstituency(id: string, updateSubConstituencyDto: UpdateSubConstituencyDto): Promise<SubConstituency> {
-        const subConstituency = await this.findSubConstituency(id);
-        if (updateSubConstituencyDto.constituency_id) {
-            const constituency = await this.findOne(updateSubConstituencyDto.constituency_id);
-            subConstituency.constituency = constituency;
-        }
-        Object.assign(subConstituency, updateSubConstituencyDto);
-        return this.subConstituenciesRepository.save(subConstituency);
-    }
-
-    async removeSubConstituency(id: string): Promise<void> {
-        const result = await this.subConstituenciesRepository.delete(id);
-        if (result.affected === 0) {
-            throw new NotFoundException(`SubConstituency with ID ${id} not found`);
-        }
-    }
+  }
 }

@@ -13,31 +13,31 @@ import { Teacher } from '../teachers/teacher.entity';
 dotenv.config();
 
 async function migrateCauses() {
-    const dataSource = new DataSource({
-        type: 'postgres',
-        host: process.env.DB_HOST || 'localhost',
-        port: parseInt(process.env.DB_PORT || '5432', 10),
-        username: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || 'postgres',
-        database: process.env.DB_NAME || 'donor_app',
-        entities: [
-            Donation,
-            DonationCause,
-            Donor,
-            Campaign,
-            User,
-            Constituency,
-            Class,
-            Teacher
-        ],
-        synchronize: true, // Don't sync schema here, assume app has done it or we do partial
-    });
+  const dataSource = new DataSource({
+    type: 'postgres',
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    username: process.env.DB_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_NAME || 'donor_app',
+    entities: [
+      Donation,
+      DonationCause,
+      Donor,
+      Campaign,
+      User,
+      Constituency,
+      Class,
+      Teacher,
+    ],
+    synchronize: true, // Don't sync schema here, assume app has done it or we do partial
+  });
 
-    try {
-        await dataSource.initialize();
-        console.log('Data Source has been initialized!');
+  try {
+    await dataSource.initialize();
+    console.log('Data Source has been initialized!');
 
-        /*
+    /*
         // 1. Get all distinct donation causes
         const donations = await dataSource.getRepository(Donation).find();
         const uniqueCauses = new Set(donations.map(d => d.donation_cause).filter(c => c)); // Filter nulls
@@ -72,15 +72,14 @@ async function migrateCauses() {
             }
         }
         */
-        console.log('Migration script is obsolete after column removal.');
+    console.log('Migration script is obsolete after column removal.');
 
-        console.log('Migration of causes completed successfully!');
-
-    } catch (error) {
-        console.error('Error during migration:', error);
-    } finally {
-        await dataSource.destroy();
-    }
+    console.log('Migration of causes completed successfully!');
+  } catch (error) {
+    console.error('Error during migration:', error);
+  } finally {
+    await dataSource.destroy();
+  }
 }
 
 migrateCauses();

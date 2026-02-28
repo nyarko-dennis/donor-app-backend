@@ -5,8 +5,8 @@ import { DonorsController } from './donors.controller';
 import { Donor } from './donor.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Donor])],
-    providers: [DonorsService],
-    controllers: [DonorsController],
+  imports: [TypeOrmModule.forFeature([Donor])],
+  providers: [DonorsService],
+  controllers: [DonorsController],
 })
-export class DonorsModule { }
+export class DonorsModule {}

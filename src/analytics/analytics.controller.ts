@@ -10,35 +10,35 @@ import { UserRole } from '../users/user.entity';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.STAKEHOLDER)
 export class AnalyticsController {
-    constructor(private readonly analyticsService: AnalyticsService) { }
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
-    @Get('overview')
-    async getOverview(@Query() filter: AnalyticsFilterDto) {
-        return this.analyticsService.getOverview(filter);
-    }
+  @Get('overview')
+  async getOverview(@Query() filter: AnalyticsFilterDto) {
+    return this.analyticsService.getOverview(filter);
+  }
 
-    @Get('donations-over-time')
-    async getDonationsOverTime(@Query() filter: AnalyticsFilterDto) {
-        return this.analyticsService.getDonationsOverTime(filter);
-    }
+  @Get('donations-over-time')
+  async getDonationsOverTime(@Query() filter: AnalyticsFilterDto) {
+    return this.analyticsService.getDonationsOverTime(filter);
+  }
 
-    @Get('top-donors')
-    async getTopDonors(@Query() filter: AnalyticsFilterDto) {
-        return this.analyticsService.getTopDonors(filter);
-    }
+  @Get('top-donors')
+  async getTopDonors(@Query() filter: AnalyticsFilterDto) {
+    return this.analyticsService.getTopDonors(filter);
+  }
 
-    @Get('campaign-performance')
-    async getCampaignPerformance(@Query() filter: AnalyticsFilterDto) {
-        return this.analyticsService.getCampaignPerformance(filter);
-    }
+  @Get('campaign-performance')
+  async getCampaignPerformance(@Query() filter: AnalyticsFilterDto) {
+    return this.analyticsService.getCampaignPerformance(filter);
+  }
 
-    @Get('geo-distribution')
-    async getGeoDistribution(@Query() filter: AnalyticsFilterDto) {
-        return this.analyticsService.getGeoDistribution(filter);
-    }
+  @Get('geo-distribution')
+  async getGeoDistribution(@Query() filter: AnalyticsFilterDto) {
+    return this.analyticsService.getGeoDistribution(filter);
+  }
 
-    @Get('retention')
-    async getRetentionStats(@Query() filter: AnalyticsFilterDto) {
-        return this.analyticsService.getRetentionStats(filter);
-    }
+  @Get('retention')
+  async getRetentionStats(@Query() filter: AnalyticsFilterDto) {
+    return this.analyticsService.getRetentionStats(filter);
+  }
 }

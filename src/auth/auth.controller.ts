@@ -1,4 +1,11 @@
-import { Controller, Post, UseGuards, Request, Body, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Request,
+  Body,
+  Get,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
@@ -14,109 +21,138 @@ import { UnauthorizedException, NotFoundException } from '@nestjs/common';
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-    constructor(
-        private authService: AuthService,
-        private usersService: UsersService
-    ) { }
+  constructor(
+    private authService: AuthService,
+    private usersService: UsersService,
+  ) {}
 
-    @Post('login')
-    @ApiOperation({ summary: 'User login' })
-    @ApiResponse({ status: 200, description: 'Return JWT access token.' })
-    @ApiBody({ type: LoginDto })
-    async login(@Body() loginDto: LoginDto) {
-        const user = await this.authService.validateUser(loginDto.email, loginDto.password);
-        if (!user) {
-            return { message: 'Invalid credentials' };
-        }
+  @Post('login')
+  @ApiOperation({ summary: 'User login' })
+  @ApiResponse({ status: 200, description: 'Return JWT access token.' })
+  @ApiBody({ type: LoginDto })
+  async login(@Body() loginDto: LoginDto) {
+    const user = await this.authService.validateUser(
+      loginDto.email,
+      loginDto.password,
+    );
+    if (!user) {
+      return { message: 'Invalid credentials' };
+    }
 
-        if (user.is_two_factor_enabled) {
-            if (!loginDto.code) {
-                return { message: '2FA code required', isTwoFactorAuthenticationRequired: true };
-            }
-
-            const isCodeValid = await this.authService.isTwoFactorAuthenticationCodeValid(
-                loginDto.code,
-                user,
-            );
-            if (!isCodeValid) {
-                return { message: 'Wrong 2FA code' }; // Or throw Unauthorized
-            }
-            return this.authService.loginWith2fa(user);
-        }
-
-        // Enforce mandatory 2FA setup
-        const loginResponse = await this.authService.login(user);
+    if (user.is_two_factor_enabled) {
+      if (!loginDto.code) {
         return {
-            ...loginResponse,
-            isTwoFactorAuthenticationSetupRequired: true,
+          message: '2FA code required',
+          isTwoFactorAuthenticationRequired: true,
         };
-    }
+      }
 
-    @UseGuards(JwtAuthGuard)
-    @Get('profile')
-    @ApiOperation({ summary: 'Get current user profile' })
-    @ApiResponse({ status: 200, description: 'Return current user profile.', type: UserResponseDto })
-    async getProfile(@Request() req) {
-        const user = await this.usersService.findById(req.user.id);
-        if (!user) {
-            throw new NotFoundException('User not found');
-        }
-        return new UserResponseDto(user);
-    }
-
-    @Post('forgot-password')
-    @ApiOperation({ summary: 'Request password reset' })
-    @ApiResponse({ status: 200, description: 'Password reset email sent if account exists.' })
-    @ApiBody({ type: ForgotPasswordDto })
-    async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-        return this.authService.forgotPassword(forgotPasswordDto.email);
-    }
-
-    @Post('reset-password')
-    @ApiOperation({ summary: 'Reset password with token' })
-    @ApiResponse({ status: 200, description: 'Password successfully reset.' })
-    @ApiBody({ type: ResetPasswordDto })
-    async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-        return this.authService.resetPassword(resetPasswordDto.token, resetPasswordDto.newPassword);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Post('change-password')
-    @ApiOperation({ summary: 'Change password (logged in)' })
-    @ApiResponse({ status: 200, description: 'Password changed successfully.' })
-    @ApiBody({ type: ChangePasswordDto })
-    async changePassword(@Request() req, @Body() changePasswordDto: ChangePasswordDto) {
-        return this.authService.changePassword(req.user.id, changePasswordDto.oldPassword, changePasswordDto.newPassword);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Get('2fa/generate')
-    @ApiOperation({ summary: 'Generate 2FA QR Code' })
-    @ApiResponse({ status: 200, description: 'QR Code Data URL' })
-    async generateTwoFactorAuthentication(@Request() req) {
-        const { otpauthUrl } = await this.authService.generateTwoFactorAuthenticationSecret(req.user);
-        return this.authService.generateQrCodeDataURL(otpauthUrl);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @Post('2fa/turn-on')
-    @ApiOperation({ summary: 'Turn on 2FA' })
-    @ApiResponse({ status: 200, description: '2FA enabled' })
-    @ApiBody({ type: TwoFactorAuthenticationCodeDto }) // We need to import this
-    async turnOnTwoFactorAuthentication(@Request() req, @Body() body: TwoFactorAuthenticationCodeDto) {
-        const user = await this.usersService.findById(req.user.id);
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        const isCodeValid = await this.authService.isTwoFactorAuthenticationCodeValid(
-            body.code,
-            user,
+      const isCodeValid =
+        await this.authService.isTwoFactorAuthenticationCodeValid(
+          loginDto.code,
+          user,
         );
-        if (!isCodeValid) {
-            throw new UnauthorizedException('Wrong authentication code');
-        }
-        await this.usersService.turnOnTwoFactorAuthentication(req.user.id);
-        return { message: '2FA has been turned on' };
+      if (!isCodeValid) {
+        return { message: 'Wrong 2FA code' }; // Or throw Unauthorized
+      }
+      return this.authService.loginWith2fa(user);
     }
+
+    // Enforce mandatory 2FA setup
+    const loginResponse = await this.authService.login(user);
+    return {
+      ...loginResponse,
+      isTwoFactorAuthenticationSetupRequired: true,
+    };
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return current user profile.',
+    type: UserResponseDto,
+  })
+  async getProfile(@Request() req) {
+    const user = await this.usersService.findById(req.user.id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return new UserResponseDto(user);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Request password reset' })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset email sent if account exists.',
+  })
+  @ApiBody({ type: ForgotPasswordDto })
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto.email);
+  }
+
+  @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiResponse({ status: 200, description: 'Password successfully reset.' })
+  @ApiBody({ type: ResetPasswordDto })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(
+      resetPasswordDto.token,
+      resetPasswordDto.newPassword,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  @ApiOperation({ summary: 'Change password (logged in)' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully.' })
+  @ApiBody({ type: ChangePasswordDto })
+  async changePassword(
+    @Request() req,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    return this.authService.changePassword(
+      req.user.id,
+      changePasswordDto.oldPassword,
+      changePasswordDto.newPassword,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('2fa/generate')
+  @ApiOperation({ summary: 'Generate 2FA QR Code' })
+  @ApiResponse({ status: 200, description: 'QR Code Data URL' })
+  async generateTwoFactorAuthentication(@Request() req) {
+    const { otpauthUrl } =
+      await this.authService.generateTwoFactorAuthenticationSecret(req.user);
+    return this.authService.generateQrCodeDataURL(otpauthUrl);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/turn-on')
+  @ApiOperation({ summary: 'Turn on 2FA' })
+  @ApiResponse({ status: 200, description: '2FA enabled' })
+  @ApiBody({ type: TwoFactorAuthenticationCodeDto }) // We need to import this
+  async turnOnTwoFactorAuthentication(
+    @Request() req,
+    @Body() body: TwoFactorAuthenticationCodeDto,
+  ) {
+    const user = await this.usersService.findById(req.user.id);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const isCodeValid =
+      await this.authService.isTwoFactorAuthenticationCodeValid(
+        body.code,
+        user,
+      );
+    if (!isCodeValid) {
+      throw new UnauthorizedException('Wrong authentication code');
+    }
+    await this.usersService.turnOnTwoFactorAuthentication(req.user.id);
+    return { message: '2FA has been turned on' };
+  }
 }

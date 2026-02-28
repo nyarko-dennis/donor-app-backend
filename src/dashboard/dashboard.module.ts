@@ -8,8 +8,10 @@ import { Campaign } from '../campaigns/campaign.entity';
 import { Constituency } from '../constituencies/constituency.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Donation, Donor, Campaign, Constituency])],
-    controllers: [DashboardController],
-    providers: [DashboardService],
+  imports: [
+    TypeOrmModule.forFeature([Donation, Donor, Campaign, Constituency]),
+  ],
+  controllers: [DashboardController],
+  providers: [DashboardService],
 })
-export class DashboardModule { }
+export class DashboardModule {}
