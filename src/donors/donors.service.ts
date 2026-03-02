@@ -36,9 +36,10 @@ export class DonorsService {
     const queryBuilder = this.donorsRepository.createQueryBuilder('donor');
 
     if (pageOptionsDto.search) {
+      const search = pageOptionsDto.search.trim();
       queryBuilder.where(
-        '(donor.first_name ILIKE :search OR donor.last_name ILIKE :search OR donor.email ILIKE :search)',
-        { search: `%${pageOptionsDto.search}%` },
+        `(donor.first_name ILIKE :search OR donor.last_name ILIKE :search OR donor.email ILIKE :search OR donor.phone ILIKE :search OR CONCAT(donor.first_name, ' ', donor.last_name) ILIKE :search)`,
+        { search: `%${search}%` },
       );
     }
 
