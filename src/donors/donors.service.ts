@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, QueryFailedError } from 'typeorm';
 import { Donor } from './donor.entity';
 import { CreateDonorDto } from './dto/create-donor.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
@@ -13,11 +13,23 @@ export class DonorsService {
   constructor(
     @InjectRepository(Donor)
     private donorsRepository: Repository<Donor>,
-  ) {}
+  ) { }
 
-  create(createDonorDto: CreateDonorDto): Promise<Donor> {
+  async create(createDonorDto: CreateDonorDto): Promise<Donor> {
     const donor = this.donorsRepository.create(createDonorDto);
-    return this.donorsRepository.save(donor);
+    try {
+      return await this.donorsRepository.save(donor);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error as any).code === '23505'
+      ) {
+        throw new ConflictException(
+          `A donor with the email "${createDonorDto.email}" already exists.`,
+        );
+      }
+      throw error;
+    }
   }
 
   async findAll(pageOptionsDto: DonorsPageOptionsDto): Promise<PageDto<Donor>> {
