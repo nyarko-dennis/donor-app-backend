@@ -37,4 +37,4 @@ import { MailModule } from '../mail/mail.module';
   exports: [DonationsService],
   controllers: [DonationsController],
 })
-export class DonationsModule { }
+export class DonationsModule {}

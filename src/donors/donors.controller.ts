@@ -7,9 +7,11 @@ import {
   Delete,
   UseGuards,
   Query,
+  Patch,
 } from '@nestjs/common';
 import { DonorsService } from './donors.service';
 import { CreateDonorDto } from './dto/create-donor.dto';
+import { UpdateDonorDto } from './dto/update-donor.dto';
 import { DonorResponseDto } from './dto/donor-response.dto';
 import { Donor } from './donor.entity';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -77,6 +79,22 @@ export class DonorsController {
   async findOne(@Param('id') id: string): Promise<DonorResponseDto | null> {
     const donor = await this.donorsService.findOne(id);
     return donor ? new DonorResponseDto(donor) : null;
+  }
+
+  @Patch(':id')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update a donor' })
+  @ApiResponse({
+    status: 200,
+    description: 'The donor has been successfully updated.',
+    type: DonorResponseDto,
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateDonorDto: UpdateDonorDto,
+  ): Promise<DonorResponseDto> {
+    const donor = await this.donorsService.update(id, updateDonorDto);
+    return new DonorResponseDto(donor);
   }
 
   @Delete(':id')

@@ -30,7 +30,7 @@ export class ExportsService {
     private donorsRepository: Repository<Donor>,
     @InjectRepository(Campaign)
     private campaignsRepository: Repository<Campaign>,
-  ) { }
+  ) {}
 
   async exportData(request: ExportRequestDto): Promise<StreamableFile> {
     let data: any[] = [];
@@ -92,7 +92,11 @@ export class ExportsService {
       let confirmedReceipt = '';
       const paymentMethod = (d.payment_method || '').toLowerCase();
 
-      if (paymentMethod === 'cash' || paymentMethod === 'in-kind' || paymentMethod === 'in kind') {
+      if (
+        paymentMethod === 'cash' ||
+        paymentMethod === 'in-kind' ||
+        paymentMethod === 'in kind'
+      ) {
         confirmedReceipt = 'Received';
       } else if (d.transaction) {
         if (d.transaction.status === 'SUCCESS') {
@@ -105,20 +109,25 @@ export class ExportsService {
       }
 
       return {
-        'Donated By': `${d.donor?.first_name || ''} ${d.donor?.last_name || ''}`.trim(),
+        'Donated By':
+          `${d.donor?.first_name || ''} ${d.donor?.last_name || ''}`.trim(),
         'Constituency (Glance)': constituencyName,
-        'Board': constituencyLower.includes('board'),
-        'Mgmt': constituencyLower.includes('mgmt') || constituencyLower.includes('management'),
-        'Staff': constituencyLower.includes('staff'),
-        'Student': constituencyLower.includes('student'),
-        'Parent': constituencyLower.includes('parent'),
-        'Alum': constituencyLower.includes('alum') || constituencyLower.includes('alumni'),
-        'Friend': constituencyLower.includes('friend'),
-        'Section': d.sub_constituency?.name || '',
-        'Cause': d.cause?.name || '',
-        'Amount': d.amount,
+        Board: constituencyLower.includes('board'),
+        Mgmt:
+          constituencyLower.includes('mgmt') ||
+          constituencyLower.includes('management'),
+        Staff: constituencyLower.includes('staff'),
+        Student: constituencyLower.includes('student'),
+        Parent: constituencyLower.includes('parent'),
+        Alum:
+          constituencyLower.includes('alum') ||
+          constituencyLower.includes('alumni'),
+        Friend: constituencyLower.includes('friend'),
+        Section: d.sub_constituency?.name || '',
+        Cause: d.cause?.name || '',
+        Amount: d.amount,
         'Payment Method': d.payment_method || '',
-        'Date': dateObj || '',
+        Date: dateObj || '',
         'Confirmed Receipt': confirmedReceipt,
       };
     });

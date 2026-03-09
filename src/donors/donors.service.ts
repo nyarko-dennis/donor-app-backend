@@ -1,8 +1,13 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, QueryFailedError } from 'typeorm';
 import { Donor } from './donor.entity';
 import { CreateDonorDto } from './dto/create-donor.dto';
+import { UpdateDonorDto } from './dto/update-donor.dto';
 import { PageOptionsDto } from '../common/dto/page-options.dto';
 import { DonorsPageOptionsDto } from './dto/donors-page-options.dto';
 import { PageDto } from '../common/dto/page.dto';
@@ -13,7 +18,7 @@ export class DonorsService {
   constructor(
     @InjectRepository(Donor)
     private donorsRepository: Repository<Donor>,
-  ) { }
+  ) {}
 
   async create(createDonorDto: CreateDonorDto): Promise<Donor> {
     const donor = this.donorsRepository.create(createDonorDto);
@@ -107,6 +112,28 @@ export class DonorsService {
         },
       },
     });
+  }
+
+  async update(id: string, updateDonorDto: UpdateDonorDto): Promise<Donor> {
+    const donor = await this.findOne(id);
+    if (!donor) {
+      throw new NotFoundException(`Donor with ID ${id} not found`);
+    }
+
+    Object.assign(donor, updateDonorDto);
+    try {
+      return await this.donorsRepository.save(donor);
+    } catch (error) {
+      if (
+        error instanceof QueryFailedError &&
+        (error as any).code === '23505'
+      ) {
+        throw new ConflictException(
+          `A donor with the email "${updateDonorDto.email}" already exists.`,
+        );
+      }
+      throw error;
+    }
   }
 
   async remove(id: string): Promise<void> {
